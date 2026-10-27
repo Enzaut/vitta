@@ -1,0 +1,68 @@
+# Receita da publicação do VITTA na internet, na Render (https://render.com).
+# Ela cria três coisas, todas no plano grátis:
+#   1. vitta-db       o banco de dados PostgreSQL
+#   2. vitta-api-ucb  a API (a pasta backend, rodando com o Dockerfile dela)
+#   3. vitta-app-ucb  a versão web do aplicativo (a pasta frontend, já compilada)
+# O passo a passo está no README.md, na seção "Publicar na internet".
+
+databases:
+  - name: vitta-db
+    plan: free
+    region: ohio
+    databaseName: vitta
+    user: vitta
+
+services:
+  # A API. Ao ligar, ela aplica as migrações, carrega as instituições do mapa e começa a atender.
+  - type: web
+    name: vitta-api-ucb
+    runtime: docker
+    plan: free
+    region: ohio
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # O endereço do banco vem sozinho do banco acima.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vitta-db
+          property: connectionString
+      # Segredo que assina os logins. A Render inventa um valor aleatório e forte.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      # A máquina grátis é fraca: o custo 10 (em vez de 12) deixa cadastro e login mais rápidos.
+      - key: BCRYPT_COST
+        value: "10"
+      # Sites que podem chamar a API pelo navegador (a versão web). "*" libera todos; o login vai por token, não por cookie.
+      - key: CORS_ORIGENS
+        value: "*"
+      # true = carrega também as 7 instituições de demonstração (fictícias, marcadas como tal no app).
+      - key: INSTITUICOES_DEMO
+        value: "true"
+
+  # A versão web do aplicativo (um site estático gerado pelo Expo).
+  - type: web
+    name: vitta-app-ucb
+    runtime: static
+    buildCommand: cd frontend && npm ci && npx expo export --platform web
+    staticPublishPath: ./frontend/dist
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: EXPO_NO_TELEMETRY
+        value: "1"
+      # Endereço da API. Precisa ser igual ao endereço mostrado no painel da Render para a vitta-api-ucb.
+      - key: EXPO_PUBLIC_API_URL
+        value: https://vitta-api-ucb.onrender.com
+    routes:
+      # Qualquer endereço do site abre o aplicativo (ele cuida das telas sozinho).
+      - type: rewrite
+        source: /*
+        destination: /index.html
