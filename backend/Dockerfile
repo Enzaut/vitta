@@ -19,5 +19,6 @@ RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" npx prisma gene
 
 EXPOSE 3000
 
-# Ao iniciar: aplica as migrations pendentes, carrega as instituições do mapa (sem duplicar) e sobe a API
-CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts && npx tsx src/index.ts"]
+# Ao iniciar: espera o banco responder (na internet ele pode demorar a ficar pronto, por até uns 100 segundos),
+# aplica as migrations pendentes, carrega as instituições do mapa (sem duplicar) e sobe a API
+CMD ["sh", "-c", "n=0; until npx prisma migrate deploy; do n=$((n+1)); if [ $n -ge 20 ]; then echo 'O banco nao respondeu. Desistindo.'; exit 1; fi; echo 'Banco ainda nao esta pronto, tentando de novo em 5 segundos...'; sleep 5; done; npx tsx prisma/seed.ts && npx tsx src/index.ts"]
