@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Tipos sanguíneos aceitos. No banco ficam gravados como "A+", "A-", "B+" etc.
+enum TipoSanguineo {
+  A_POSITIVO  @map("A+")
+  A_NEGATIVO  @map("A-")
+  B_POSITIVO  @map("B+")
+  B_NEGATIVO  @map("B-")
+  AB_POSITIVO @map("AB+")
+  AB_NEGATIVO @map("AB-")
+  O_POSITIVO  @map("O+")
+  O_NEGATIVO  @map("O-")
+}
+
+// Doador: pessoa que usa o app (HU-01 cadastro e login, HU-02 exclusão de conta,
+// HU-11 configuração dos dados do usuário).
+model Doador {
+  id             String   @id @default(uuid())
+  nome           String
+  email          String   @unique
+  dataNascimento DateTime @db.Date
+  senhaHash      String
+
+  // HU-11: o doador informa depois do cadastro, no perfil.
+  // Telefone: só os dígitos, com DDD (10 ou 11 dígitos).
+  telefone      String?
+  tipoSanguineo TipoSanguineo?
+
+  // Bloqueio por tentativas de login (HU-01, cenário 3):
+  // 5 falhas seguidas bloqueiam a conta por 15 minutos.
+  tentativasFalhas Int       @default(0)
+  bloqueadoAte     DateTime?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  // HU-03: o formulário de análise mais recente (apagado junto com a conta).
+  formulario FormularioElegibilidade?
+
+  @@map("doadores")
+}
+
+// Instituição onde dá para doar sangue (HU-05: mapa com instituições próximas).
+// Os dados iniciais ficam em prisma/dados/instituicoes.ts e entram com `npm run seed`.
+model Instituicao {
+  id String @id @default(uuid())
+
+  // Identificador estável, usado para atualizar os dados iniciais sem duplicar (ex.: "hemocentro-de-brasilia").
+  codigo String @unique
+
+  nome     String
+  endereco String
+  cidade   String
+  uf       String
+  telefone String?
+  // Texto livre, do jeito que a instituição divulga (ex.: "Segunda a sábado, das 7h15 às 18h").
+  horario String
+
+  latitude  Float
+  longitude Float
+
+  // Tipos sanguíneos em falta e quando essa informação foi atualizada.
+  // Sem data = a instituição não informou o estoque (não significa que está tudo bem).
+  tiposEmFalta        TipoSanguineo[]
+  estoqueAtualizadoEm DateTime?
+
+  // true = instituição de exemplo, só para demonstrar o mapa (não existe de verdade).
+  demonstracao Boolean @default(false)
+  // De onde vieram os dados de uma instituição real (endereço, horário...).
+  fonte        String?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("instituicoes")
+}
+
+// Resultado do formulário de análise (HU-03):
+//  APTO: pode agendar; INAPTO_TEMPORARIO: só a partir da data de retorno (ou depois de responder de novo);
+//  INAPTO: não pode doar; AVALIACAO: pode agendar, mas a triagem no hemocentro avalia alguns pontos.
+enum ResultadoElegibilidade {
+  APTO
+  INAPTO_TEMPORARIO
+  INAPTO
+  AVALIACAO
+}
+
+// Formulário de análise para candidato a doação (HU-03 / RN-001 a RN-004).
+// Só o mais recente de cada doador: responder de novo substitui o anterior, para guardar o mínimo de dados de saúde.
+model FormularioElegibilidade {
+  id       String @id @default(uuid())
+  doadorId String @unique
+  doador   Doador @relation(fields: [doadorId], references: [id], onDelete: Cascade)
+
+  // Data e hora do preenchimento e dia até o qual o formulário vale (RN-003).
+  preenchidoEm DateTime @default(now())
+  validoAte    DateTime @db.Date
+
+  resultado ResultadoElegibilidade
+  // Primeiro dia em que o agendamento pode abrir (só em INAPTO_TEMPORARIO, e só quando todos os motivos têm data).
+  liberadoEm DateTime? @db.Date
+
+  // O que a pessoa viu no resultado, guardado como foi calculado (mesmo que as regras mudem depois).
+  mensagem String
+  motivos  Json
+  avisos   Json
+
+  // Versão das regras (Portaria) usada na conta e as respostas dadas, para poder refazer a conta se a regra mudar.
+  versaoRegras String
+  respostas    Json
+
+  @@map("formularios_elegibilidade")
+}

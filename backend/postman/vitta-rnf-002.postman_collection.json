@@ -1,0 +1,750 @@
+{
+  "info": {
+    "name": "VITTA - RNF-002 Controle de acesso (E2-3)",
+    "description": "Cenário da matriz de verificação: com o token do doador A, chamar as rotas de perfil, formulário e exclusão usando o id do doador B. Resultado esperado: erro 403 (ou 404) em todas, sem vazar dados, e a conta e o formulário de B continuam intactos.\n\nComo usar: suba a API (npm run dev na pasta backend) e rode a coleção inteira (Collection Runner do Postman ou `npx newman run`). Para outro ambiente, mude a variável baseUrl.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Cadastrar o doador A",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"emailA\", \"a.\" + Date.now() + \"@teste.vitta\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Cadastro de A: 201\", function () { pm.response.to.have.status(201); });",
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set(\"tokenA\", json.token);",
+              "pm.collectionVariables.set(\"idA\", json.doador.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Doador A\",\n  \"email\": \"{{emailA}}\",\n  \"dataNascimento\": \"1995-03-15\",\n  \"senha\": \"Senha@2026\",\n  \"confirmarSenha\": \"Senha@2026\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/cadastro",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "cadastro"
+          ]
+        },
+        "description": "Cria a conta A e guarda o token e o id dela nas variáveis da coleção."
+      }
+    },
+    {
+      "name": "2. Cadastrar o doador B",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"emailB\", \"b.\" + Date.now() + \"@teste.vitta\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Cadastro de B: 201\", function () { pm.response.to.have.status(201); });",
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set(\"tokenB\", json.token);",
+              "pm.collectionVariables.set(\"idB\", json.doador.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Doador B\",\n  \"email\": \"{{emailB}}\",\n  \"dataNascimento\": \"1990-07-20\",\n  \"senha\": \"Senha@2026\",\n  \"confirmarSenha\": \"Senha@2026\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/cadastro",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "cadastro"
+          ]
+        },
+        "description": "Cria a conta B e guarda o token e o id dela."
+      }
+    },
+    {
+      "name": "3. B informa telefone e tipo sanguíneo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"B salvou os dados: 200\", function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenB}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"telefone\": \"11988887777\",\n  \"tipoSanguineo\": \"O-\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/doadores/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "me"
+          ]
+        },
+        "description": "Dá a B dados que dá para notar se alguém mexer."
+      }
+    },
+    {
+      "name": "4. B responde ao formulário de elegibilidade (POST /doadores/me/formulario)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Formulário de B enviado: 201\", function () { pm.response.to.have.status(201); });",
+              "const f = pm.response.json().formulario;",
+              "pm.test(\"Resultado de B: INAPTO (peso abaixo de 50 kg)\", function () { pm.expect(f.resultado).to.eql(\"INAPTO\"); });",
+              "pm.collectionVariables.set(\"preenchidoEmB\", f.preenchidoEm);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenB}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"respostas\": {\n    \"bemHoje\": true,\n    \"gripe\": false,\n    \"sinaisAlerta\": false,\n    \"peso\": 49,\n    \"sexo\": \"F\",\n    \"jaDoou\": false,\n    \"procedimentos\": {},\n    \"piercingBocaGenital\": \"nao\",\n    \"remedios\": {},\n    \"vacinas\": {},\n    \"cirurgias\": {},\n    \"dentista\": {},\n    \"transfusao\": false,\n    \"condicoes\": {},\n    \"ist\": false,\n    \"riscoSexual\": {},\n    \"drogas\": {},\n    \"malaria\": false,\n    \"gestacao\": {},\n    \"declaracao\": true\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/doadores/me/formulario",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "me",
+            "formulario"
+          ]
+        },
+        "description": "B responde ao formulário da HU-03 com 49 kg. Esperado: 201 e resultado INAPTO (por peso)."
+      }
+    },
+    {
+      "name": "5. A vê o próprio perfil (GET /doadores/me)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"A vê o próprio perfil: 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"É mesmo o perfil de A\", function () { pm.expect(pm.response.json().doador.id).to.eql(pm.collectionVariables.get(\"idA\")); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenA}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/doadores/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "me"
+          ]
+        },
+        "description": "Controle: com o próprio token, A acessa os próprios dados."
+      }
+    },
+    {
+      "name": "6. A tenta VER o perfil de B (GET /doadores/{idB})",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"A tentativa de ver o perfil de B é recusada (403 ou 404)\", function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+              "});",
+              "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+              "  const texto = pm.response.text();",
+              "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+              "  pm.expect(texto).to.not.include(\"Doador B\");",
+              "  pm.expect(texto).to.not.include(\"11988887777\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenA}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/doadores/{{idB}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "{{idB}}"
+          ]
+        },
+        "description": "Com o token de A, usa o id de B no caminho. Esperado: 403 (ou 404)."
+      }
+    },
+    {
+      "name": "7. A tenta ALTERAR o perfil de B (PATCH /doadores/{idB})",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"A tentativa de alterar o perfil de B é recusada (403 ou 404)\", function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+              "});",
+              "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+              "  const texto = pm.response.text();",
+              "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+              "  pm.expect(texto).to.not.include(\"Doador B\");",
+              "  pm.expect(texto).to.not.include(\"11988887777\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenA}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"telefone\": \"61999990000\",\n  \"tipoSanguineo\": \"A+\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/doadores/{{idB}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "{{idB}}"
+          ]
+        },
+        "description": "Com o token de A, tenta mudar o telefone e o tipo sanguíneo de B. Esperado: 403 (ou 404)."
+      }
+    },
+    {
+      "name": "8. A tenta EXCLUIR a conta de B (DELETE /doadores/{idB})",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"A tentativa de excluir a conta de B é recusada (403 ou 404)\", function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+              "});",
+              "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+              "  const texto = pm.response.text();",
+              "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+              "  pm.expect(texto).to.not.include(\"Doador B\");",
+              "  pm.expect(texto).to.not.include(\"11988887777\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenA}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/doadores/{{idB}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "{{idB}}"
+          ]
+        },
+        "description": "Com o token de A, tenta apagar a conta de B. Esperado: 403 (ou 404)."
+      }
+    },
+    {
+      "name": "9. A tenta VER o FORMULÁRIO de B (GET /doadores/{idB}/formulario)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"A tentativa de ver o formulário de B é recusada (403 ou 404)\", function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+              "});",
+              "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+              "  const texto = pm.response.text();",
+              "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+              "  pm.expect(texto).to.not.include(\"Doador B\");",
+              "  pm.expect(texto).to.not.include(\"11988887777\");",
+              "  pm.expect(texto).to.not.include(\"INAPTO\");",
+              "  pm.expect(texto).to.not.include(\"peso\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenA}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/doadores/{{idB}}/formulario",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "{{idB}}",
+            "formulario"
+          ]
+        },
+        "description": "Com o token de A, tenta ler o formulário de elegibilidade de B (HU-03). Esperado: 403 (ou 404), sem o resultado de B."
+      }
+    },
+    {
+      "name": "10. A tenta RESPONDER o formulário no lugar de B (POST /doadores/{idB}/formulario)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"A tentativa de responder o formulário no lugar de B é recusada (403 ou 404)\", function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+              "});",
+              "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+              "  const texto = pm.response.text();",
+              "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+              "  pm.expect(texto).to.not.include(\"Doador B\");",
+              "  pm.expect(texto).to.not.include(\"11988887777\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenA}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"respostas\": {\n    \"bemHoje\": true,\n    \"gripe\": false,\n    \"sinaisAlerta\": false,\n    \"peso\": 80,\n    \"sexo\": \"F\",\n    \"jaDoou\": false,\n    \"procedimentos\": {},\n    \"piercingBocaGenital\": \"nao\",\n    \"remedios\": {},\n    \"vacinas\": {},\n    \"cirurgias\": {},\n    \"dentista\": {},\n    \"transfusao\": false,\n    \"condicoes\": {},\n    \"ist\": false,\n    \"riscoSexual\": {},\n    \"drogas\": {},\n    \"malaria\": false,\n    \"gestacao\": {},\n    \"declaracao\": true\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/doadores/{{idB}}/formulario",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "{{idB}}",
+            "formulario"
+          ]
+        },
+        "description": "Com o token de A, tenta enviar respostas como se fosse B. Esperado: 403 (ou 404), e o formulário de B não muda."
+      }
+    },
+    {
+      "name": "11. A tenta baixar as perguntas pelo caminho de B (GET /doadores/{idB}/formulario/modelo)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"A tentativa de usar o caminho do formulário de B é recusada (403 ou 404)\", function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+              "});",
+              "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+              "  const texto = pm.response.text();",
+              "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+              "  pm.expect(texto).to.not.include(\"Doador B\");",
+              "  pm.expect(texto).to.not.include(\"11988887777\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenA}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/doadores/{{idB}}/formulario/modelo",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "{{idB}}",
+            "formulario",
+            "modelo"
+          ]
+        },
+        "description": "Qualquer caminho /doadores/{id}/... com o id de outro doador é recusado. Esperado: 403 (ou 404)."
+      }
+    },
+    {
+      "name": "12. B continua com os mesmos dados (GET /doadores/me com o token de B)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"B ainda existe: 200\", function () { pm.response.to.have.status(200); });",
+              "const b = pm.response.json().doador;",
+              "pm.test(\"Os dados de B estão intactos\", function () {",
+              "  pm.expect(b.id).to.eql(pm.collectionVariables.get(\"idB\"));",
+              "  pm.expect(b.nome).to.eql(\"Doador B\");",
+              "  pm.expect(b.telefone).to.eql(\"11988887777\");",
+              "  pm.expect(b.tipoSanguineo).to.eql(\"O-\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenB}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/doadores/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "me"
+          ]
+        },
+        "description": "Depois de todas as tentativas de A, a conta de B existe e nada mudou."
+      }
+    },
+    {
+      "name": "13. B continua com o mesmo formulário (GET /doadores/me/formulario com o token de B)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Formulário de B existe: 200\", function () { pm.response.to.have.status(200); });",
+              "const f = pm.response.json().formulario;",
+              "pm.test(\"O formulário de B está intacto\", function () {",
+              "  pm.expect(f.resultado).to.eql(\"INAPTO\");",
+              "  pm.expect(f.preenchidoEm).to.eql(pm.collectionVariables.get(\"preenchidoEmB\"));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenB}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/doadores/me/formulario",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "me",
+            "formulario"
+          ]
+        },
+        "description": "O envio feito por A no passo 10 não pode ter mudado o formulário de B: continua INAPTO, com a mesma data de preenchimento."
+      }
+    },
+    {
+      "name": "14. Sem token: GET /doadores/{idB}",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Sem token: 401\", function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/doadores/{{idB}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "{{idB}}"
+          ]
+        },
+        "description": "Sem token, a API responde 401 antes mesmo de olhar o id."
+      }
+    },
+    {
+      "name": "15. Sem token: GET /doadores/me/formulario",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Sem token: 401\", function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/doadores/me/formulario",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "me",
+            "formulario"
+          ]
+        },
+        "description": "O formulário também exige login."
+      }
+    },
+    {
+      "name": "16. Limpeza: A exclui a própria conta",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Conta de A excluída: 204\", function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenA}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/doadores/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "me"
+          ]
+        },
+        "description": "Remove a conta de teste A."
+      }
+    },
+    {
+      "name": "17. Limpeza: B exclui a própria conta (e o formulário vai junto)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Conta de B excluída: 204\", function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{tokenB}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/doadores/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "doadores",
+            "me"
+          ]
+        },
+        "description": "Remove a conta de teste B. O formulário de B é apagado em cascata (HU-02)."
+      }
+    }
+  ]
+}

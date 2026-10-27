@@ -1,0 +1,51 @@
+# Receita dos containers do VITTA: um banco de dados (db) e a API (api).
+# Para subir tudo: docker compose up --build
+name: vitta
+
+services:
+  # Banco de dados PostgreSQL
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vitta}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vitta}
+      POSTGRES_DB: ${POSTGRES_DB:-vitta}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      # Guarda os dados do banco, para não sumirem quando o container for recriado
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Só considera o banco "saudável" quando ele já aceita conexões
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # API (Express + Prisma)
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        # A API só começa depois que o banco estiver saudável
+        condition: service_healthy
+    environment:
+      # Dentro do Docker o banco se chama "db" (nome do serviço acima)
+      DATABASE_URL: postgresql://${POSTGRES_USER:-vitta}:${POSTGRES_PASSWORD:-vitta}@db:5432/${POSTGRES_DB:-vitta}
+      PORT: "3000"
+      # Segredo e validade dos tokens JWT. Este valor padrão serve só para desenvolvimento local.
+      JWT_SECRET: ${JWT_SECRET:-segredo-apenas-para-desenvolvimento}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  pgdata:
