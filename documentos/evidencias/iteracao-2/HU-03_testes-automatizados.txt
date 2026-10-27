@@ -1,0 +1,214 @@
+Evidência da E2-2 (HU-03): relatório dos testes automáticos
+Gerado em 19/10/2026 (horário de Brasília). Comando: npx vitest run --reporter=verbose tests/triagem-datas.test.ts tests/triagem-analise.test.ts tests/triagem-modelo.test.ts tests/formulario.test.ts
+Regras testadas: Portaria GM/MS nº 11.685/2026 (versão das regras 2026-09-30). Os testes de limite usam sempre o último dia que barra e o primeiro dia que passa.
+
+
+ RUN  v5.0.5 C:/Users/user/Downloads/vitta/backend
+
+ ✓ tests/formulario.test.ts > as rotas do formulário exigem login > sem token, devolvem 401 37ms
+ ✓ tests/formulario.test.ts > GET /doadores/me/formulario/modelo > devolve as perguntas, a versão das regras e a validade 57ms
+ ✓ tests/formulario.test.ts > GET /doadores/me/formulario > antes de responder, devolve formulario nulo 21ms
+ ✓ tests/formulario.test.ts > cenário 1: formulário respondido, doador apto > responde 201, registra data e validade e libera o agendamento 45ms
+ ✓ tests/formulario.test.ts > cenário 1: formulário respondido, doador apto > o GET devolve o mesmo formulário 25ms
+ ✓ tests/formulario.test.ts > cenário 1: formulário respondido, doador apto > o doador pode usar o próprio id no caminho no lugar de “me” 22ms
+ ✓ tests/formulario.test.ts > cenário 2: doador temporariamente inapto > calcula a data de retorno, bloqueia o agendamento e mostra o motivo 18ms
+ ✓ tests/formulario.test.ts > cenário 2: doador temporariamente inapto > no dia da data de retorno o agendamento abre sozinho (e um dia antes ainda não) 26ms
+ ✓ tests/formulario.test.ts > cenário 2: doador temporariamente inapto > sem data de retorno (ainda com sintomas), o agendamento só abre respondendo de novo 30ms
+ ✓ tests/formulario.test.ts > outros resultados > inapto (ex.: peso abaixo de 50 kg): não libera o agendamento 24ms
+ ✓ tests/formulario.test.ts > outros resultados > inapto por idade (15 anos): o motivo traz o dia em que faz 16 17ms
+ ✓ tests/formulario.test.ts > outros resultados > 16 anos: apto, com o aviso da autorização do responsável 16ms
+ ✓ tests/formulario.test.ts > outros resultados > precisa de avaliação: o agendamento fica liberado, com os pontos a avaliar 19ms
+ ✓ tests/formulario.test.ts > cenário 3: formulário não atualizado no prazo (RN-003 e RN-004) > vale por 30 dias: no último dia ainda libera; no dia seguinte pede para responder de novo 25ms
+ ✓ tests/formulario.test.ts > cenário 3: formulário não atualizado no prazo (RN-003 e RN-004) > espera longa (4 meses) vence antes da data de retorno: é preciso responder de novo 21ms
+ ✓ tests/formulario.test.ts > cenário 4: campos obrigatórios em branco > bloqueia o envio, devolve a mensagem do documento e aponta as perguntas 20ms
+ ✓ tests/formulario.test.ts > cenário 4: campos obrigatórios em branco > corpo vazio ou sem “respostas” também é recusado 19ms
+ ✓ tests/formulario.test.ts > cenário 4: campos obrigatórios em branco > valor inválido (data no futuro) é recusado e não grava nada 14ms
+ ✓ tests/formulario.test.ts > responder de novo > substitui o formulário anterior (só o mais recente fica guardado) 33ms
+ ✓ tests/formulario.test.ts > responder de novo > guarda só as respostas que valem (as de perguntas que não aparecem são descartadas) 19ms
+ ✓ tests/formulario.test.ts > RNF-002: cada doador só vê e responde o próprio formulário > A não consegue ver, responder nem baixar as perguntas no formulário de B (403) 46ms
+ ✓ tests/formulario.test.ts > RNF-002: cada doador só vê e responde o próprio formulário > cada um vê o seu resultado 40ms
+ ✓ tests/formulario.test.ts > HU-02: o formulário é apagado junto com a conta > excluir a conta remove o formulário do banco 24ms
+ ✓ tests/triagem-analise.test.ts > resultado base > quem não tem impedimento é APTO, sem motivos, com a dica do dia da doação 3ms
+ ✓ tests/triagem-analise.test.ts > idade (Art. 39): 15, 16, 60, 61, 69 e 70 anos > 15 anos (um dia antes de completar 16): inapto por idade, com o dia do aniversário 2ms
+ ✓ tests/triagem-analise.test.ts > idade (Art. 39): 15, 16, 60, 61, 69 e 70 anos > 16 anos completos hoje: pode, e recebe o aviso da autorização do responsável 0ms
+ ✓ tests/triagem-analise.test.ts > idade (Art. 39): 15, 16, 60, 61, 69 e 70 anos > 17 anos: aviso de autorização; 18 anos: sem o aviso 0ms
+ ✓ tests/triagem-analise.test.ts > idade (Art. 39): 15, 16, 60, 61, 69 e 70 anos > até 60 anos a primeira doação segue; com 61 a 69 anos sem doação anterior vai para avaliação 0ms
+ ✓ tests/triagem-analise.test.ts > idade (Art. 39): 15, 16, 60, 61, 69 e 70 anos > 69 anos de quem já doou: apto. Um dia depois (70 anos): avaliação médica 1ms
+ ✓ tests/triagem-analise.test.ts > idade (Art. 39): 15, 16, 60, 61, 69 e 70 anos > 70 anos ou mais sem nunca ter doado: inapto por idade 0ms
+ ✓ tests/triagem-analise.test.ts > peso (Art. 40): 49 e 50 kg > 49 kg: inapto por peso 0ms
+ ✓ tests/triagem-analise.test.ts > peso (Art. 40): 49 e 50 kg > 49.9 kg: inapto por peso 1ms
+ ✓ tests/triagem-analise.test.ts > peso (Art. 40): 49 e 50 kg > 30 kg: inapto por peso 0ms
+ ✓ tests/triagem-analise.test.ts > peso (Art. 40): 49 e 50 kg > 50 kg: segue 0ms
+ ✓ tests/triagem-analise.test.ts > peso (Art. 40): 49 e 50 kg > 50.1 kg: segue 0ms
+ ✓ tests/triagem-analise.test.ts > peso (Art. 40): 49 e 50 kg > 120 kg: segue 0ms
+ ✓ tests/triagem-analise.test.ts > intervalo entre doações (Art. 38) > homem: 2 meses 0ms
+ ✓ tests/triagem-analise.test.ts > intervalo entre doações (Art. 38) > mulher: 3 meses 0ms
+ ✓ tests/triagem-analise.test.ts > intervalo entre doações (Art. 38) > quem prefere não informar o sexo usa o intervalo maior (3 meses) 0ms
+ ✓ tests/triagem-analise.test.ts > intervalo entre doações (Art. 38) > avisa do limite de doações por ano 0ms
+ ✓ tests/triagem-analise.test.ts > como você está hoje (Art. 53, 55 e 56) > não estar bem hoje barra, sem data de retorno 0ms
+ ✓ tests/triagem-analise.test.ts > como você está hoje (Art. 53, 55 e 56) > gripe ou resfriado COM febre (2 semanas) > 13 dias depois do fim dos sintomas: barra, volta amanhã 0ms
+ ✓ tests/triagem-analise.test.ts > como você está hoje (Art. 53, 55 e 56) > gripe ou resfriado COM febre (2 semanas) > 14 dias depois do fim dos sintomas: passa 0ms
+ ✓ tests/triagem-analise.test.ts > como você está hoje (Art. 53, 55 e 56) > resfriado comum SEM febre (3 dias) > 2 dias depois: barra 0ms
+ ✓ tests/triagem-analise.test.ts > como você está hoje (Art. 53, 55 e 56) > resfriado comum SEM febre (3 dias) > 3 dias depois: passa 0ms
+ ✓ tests/triagem-analise.test.ts > como você está hoje (Art. 53, 55 e 56) > quem ainda está com os sintomas: barra sem data 0ms
+ ✓ tests/triagem-analise.test.ts > como você está hoje (Art. 53, 55 e 56) > sinais de alerta sem explicação vão para avaliação, sem barrar 0ms
+ ✓ tests/triagem-analise.test.ts > tatuagem, piercing e procedimentos estéticos (Anexo 2; Art. 65) > local seguro: 6 dias barra, 7 dias passa 0ms
+ ✓ tests/triagem-analise.test.ts > tatuagem, piercing e procedimentos estéticos (Anexo 2; Art. 65) > local sem segurança comprovada (nao): 4 meses 2ms
+ ✓ tests/triagem-analise.test.ts > tatuagem, piercing e procedimentos estéticos (Anexo 2; Art. 65) > local sem segurança comprovada (naoSei): 4 meses 1ms
+ ✓ tests/triagem-analise.test.ts > tatuagem, piercing e procedimentos estéticos (Anexo 2; Art. 65) > valem as mesmas regras para maquiagem definitiva, piercing comum, acupuntura e procedimento estético 0ms
+ ✓ tests/triagem-analise.test.ts > tatuagem, piercing e procedimentos estéticos (Anexo 2; Art. 65) > com mais de um procedimento, vale a data de retorno mais distante 9ms
+ ✓ tests/triagem-analise.test.ts > tatuagem, piercing e procedimentos estéticos (Anexo 2; Art. 65) > piercing na boca ou na região genital > ainda usando: barra sem data 0ms
+ ✓ tests/triagem-analise.test.ts > tatuagem, piercing e procedimentos estéticos (Anexo 2; Art. 65) > piercing na boca ou na região genital > tirou há menos de 4 meses: barra; há 4 meses: passa 1ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > antibiotico: o prazo { dias: 14 } é respeitado no dia exato 1ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > antipsicotico: o prazo { dias: 7 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > emagrecedor: o prazo { dias: 7 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > isotretinoina: o prazo { meses: 1 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > finasterida: o prazo { meses: 1 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > dutasterida: o prazo { meses: 6 } é respeitado no dia exato 2ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > acitretina: o prazo { anos: 3 } é respeitado no dia exato 9ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > testosterona: o prazo { meses: 4 } é respeitado no dia exato 1ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > prepOral: o prazo { meses: 4 } é respeitado no dia exato 1ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > prepInjetavel: o prazo { meses: 24 } é respeitado no dia exato 5ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > corticoide: o prazo { dias: 2 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > varfarina: o prazo { dias: 7 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > anticoagulanteNovo: o prazo { dias: 2 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > clopidogrel: o prazo { dias: 14 } é respeitado no dia exato 2ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > ticagrelor: o prazo { dias: 7 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > prasugrel: o prazo { dias: 3 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > imunossupressor: o prazo { meses: 12 } é respeitado no dia exato 2ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > quem ainda usa fica sem data de retorno e a mensagem diz o prazo depois da última dose 0ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > insulina impede; remédio de outro tipo vai para avaliação 0ms
+ ✓ tests/triagem-analise.test.ts > remédios (Anexo 3) > avisa para não parar o remédio por causa da doação 0ms
+ ✓ tests/triagem-analise.test.ts > vacinas (Anexo 4) > viva: o prazo { dias: 28 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > vacinas (Anexo 4) > inativada: o prazo { dias: 2 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > vacinas (Anexo 4) > covid: o prazo { dias: 7 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > vacinas (Anexo 4) > antirrábica: 48 horas, ou 12 meses se foi depois de mordida ou arranhão de animal 2ms
+ ✓ tests/triagem-analise.test.ts > vacinas (Anexo 4) > vacina que a pessoa não sabe qual é vai para avaliação 0ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > endoscopia: o prazo { meses: 4 } é respeitado no dia exato 1ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > laparoscopia: o prazo { meses: 4 } é respeitado no dia exato 1ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > pequena: o prazo { meses: 3 } é respeitado no dia exato 1ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > media: o prazo { meses: 6 } é respeitado no dia exato 1ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > grande: o prazo { meses: 12 } é respeitado no dia exato 2ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > litotripsia: o prazo { meses: 1 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > cirurgia dos olhos e procedimento de pele: só depois da alta ou da cicatrização 0ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > outra cirurgia vai para avaliação 0ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > dentista (semAnestesia): o prazo { dias: 1 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > dentista (limpeza): o prazo { dias: 3 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > dentista (extracao): o prazo { dias: 7 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > dentista (anestesiaGeral): o prazo { meses: 1 } é respeitado no dia exato 0ms
+ ✓ tests/triagem-analise.test.ts > cirurgias, exames, dentista e transfusão (Anexo 2; Art. 66, X; Art. 67) > transfusão: 4 meses 1ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > hepatite impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > hiv impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > chagas impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > avc impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > coracao impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > diabetes impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > rim impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > pulmao impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > autoimune impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > coagulacao impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > hanseniase impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > anafilaxia impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > cirurgiaGrave impede a doação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > infecções crônicas aparecem na tela com texto neutro (não dizem qual é) 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > epilepsia e outra doença crônica vão para avaliação 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > câncer > melanoma ou câncer do sangue: inapto 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > câncer > basocelular de pele ou carcinoma in situ do colo do útero: não impede 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > câncer > outro tipo em tratamento: barra sem data 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > câncer > outro tipo: 5 anos depois do fim do tratamento (e a triagem confirma a remissão) 11ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > infecção sexualmente transmissível (Art. 64) > em tratamento: barra sem data 0ms
+ ✓ tests/triagem-analise.test.ts > doenças e condições (Anexo 1) > infecção sexualmente transmissível (Art. 64) > 12 meses depois da cura 2ms
+ ✓ tests/triagem-analise.test.ts > situações de risco (Art. 62 a 66) > parceiroNovo: 4 meses 1ms
+ ✓ tests/triagem-analise.test.ts > situações de risco (Art. 62 a 66) > parceiroOcasional: 4 meses 1ms
+ ✓ tests/triagem-analise.test.ts > situações de risco (Art. 62 a 66) > trocaDinheiro: 4 meses 1ms
+ ✓ tests/triagem-analise.test.ts > situações de risco (Art. 62 a 66) > parceiroInfectado: 4 meses 1ms
+ ✓ tests/triagem-analise.test.ts > situações de risco (Art. 62 a 66) > violencia: 4 meses 1ms
+ ✓ tests/triagem-analise.test.ts > situações de risco (Art. 62 a 66) > parceiroHemodialise: 4 meses 1ms
+ ✓ tests/triagem-analise.test.ts > situações de risco (Art. 62 a 66) > a mensagem na tela não revela o tipo de situação (texto neutro) 0ms
+ ✓ tests/triagem-analise.test.ts > situações de risco (Art. 62 a 66) > “prefiro falar na triagem” vai para avaliação, nunca para apto 0ms
+ ✓ tests/triagem-analise.test.ts > situações de risco (Art. 62 a 66) > droga injetável impede; cocaína ou crack: 12 meses; maconha: até amanhã 2ms
+ ✓ tests/triagem-analise.test.ts > viagens e malária (Art. 57): 30 dias > 29 dias barra, 30 dias passa 0ms
+ ✓ tests/triagem-analise.test.ts > gestação e amamentação (Art. 45) > grávida: barra sem data 0ms
+ ✓ tests/triagem-analise.test.ts > gestação e amamentação (Art. 45) > parto ou aborto: 12 semanas (84 dias) 0ms
+ ✓ tests/triagem-analise.test.ts > gestação e amamentação (Art. 45) > amamentando bebê com menos de 12 meses 0ms
+ ✓ tests/triagem-analise.test.ts > vários motivos juntos > vale a data mais distante entre os impedimentos com prazo 0ms
+ ✓ tests/triagem-analise.test.ts > vários motivos juntos > um impedimento sem data deixa a data de retorno em branco 0ms
+ ✓ tests/triagem-analise.test.ts > vários motivos juntos > inapto vence temporário, que vence avaliação; os motivos saem nessa ordem 0ms
+ ✓ tests/triagem-analise.test.ts > vários motivos juntos > temporário vence avaliação: a avaliação continua listada nos motivos 0ms
+ ✓ tests/triagem-analise.test.ts > vários motivos juntos > a avaliação não bloqueia: o resultado AVALIACAO libera o agendamento e traz a dica do dia 0ms
+ ✓ tests/triagem-analise.test.ts > vários motivos juntos > cada motivo traz o artigo ou anexo da Portaria 0ms
+ ✓ tests/triagem-modelo.test.ts > modelo do formulário: estrutura > tem versão das regras (data) e validade em dias 2ms
+ ✓ tests/triagem-modelo.test.ts > modelo do formulário: estrutura > os ids das perguntas não se repetem 0ms
+ ✓ tests/triagem-modelo.test.ts > modelo do formulário: estrutura > dentro de cada opção, os ids dos campos não se repetem 1ms
+ ✓ tests/triagem-modelo.test.ts > modelo do formulário: estrutura > toda condição aponta para uma pergunta que vem antes dela 1ms
+ ✓ tests/triagem-modelo.test.ts > modelo do formulário: estrutura > pergunta de escolha tem ao menos duas opções e o modelo vira JSON sem perder nada 2ms
+ ✓ tests/triagem-modelo.test.ts > modelo do formulário: estrutura > o texto de cada pergunta e opção não está vazio 2ms
+ ✓ tests/triagem-modelo.test.ts > modelo x regras: toda opção tem regra e toda regra tem opção > remédios 0ms
+ ✓ tests/triagem-modelo.test.ts > modelo x regras: toda opção tem regra e toda regra tem opção > vacinas (a antirrábica é tratada à parte) 0ms
+ ✓ tests/triagem-modelo.test.ts > modelo x regras: toda opção tem regra e toda regra tem opção > cirurgias (olho e pele valem depois da alta ou da cicatrização) 1ms
+ ✓ tests/triagem-modelo.test.ts > modelo x regras: toda opção tem regra e toda regra tem opção > dentista 0ms
+ ✓ tests/triagem-modelo.test.ts > modelo x regras: toda opção tem regra e toda regra tem opção > doenças e condições (o câncer é tratado à parte) 0ms
+ ✓ tests/triagem-modelo.test.ts > modelo x regras: toda opção tem regra e toda regra tem opção > situações de risco 0ms
+ ✓ tests/triagem-modelo.test.ts > modelo x regras: toda opção tem regra e toda regra tem opção > drogas (a maconha é tratada à parte) 0ms
+ ✓ tests/triagem-modelo.test.ts > modelo x regras: toda opção tem regra e toda regra tem opção > gestação e amamentação 0ms
+ ✓ tests/triagem-modelo.test.ts > modelo x regras: toda opção tem regra e toda regra tem opção > procedimentos estéticos 0ms
+ ✓ tests/triagem-modelo.test.ts > modelo x regras: toda opção tem regra e toda regra tem opção > toda opção com prazo tem o campo de data (ou de situação e data) que a conta lê 2ms
+ ✓ tests/triagem-modelo.test.ts > modelo x regras: toda opção tem regra e toda regra tem opção > as perguntas de data e de sim/não que a conta usa existem no modelo 0ms
+ ✓ tests/triagem-modelo.test.ts > condicaoAtendida > compara com a resposta da outra pergunta 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > aceita um formulário completo e devolve as respostas 1ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > deixa a pessoa marcar várias opções, cada uma com os seus campos 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > pergunta obrigatória sem resposta (HU-03, cenário 4) > recusa com a mensagem do documento e marca a pergunta 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > pergunta obrigatória sem resposta (HU-03, cenário 4) > marca todas as perguntas que faltam de uma vez 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > pergunta obrigatória sem resposta (HU-03, cenário 4) > formulário vazio ou sem corpo também é recusado 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > pergunta obrigatória sem resposta (HU-03, cenário 4) > pergunta de marcar várias sem resposta (nem “nenhuma”) é obrigatória; objeto vazio vale como “nenhuma” 1ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > pergunta obrigatória sem resposta (HU-03, cenário 4) > campo de uma opção marcada também é obrigatório (ex.: o local da tatuagem era seguro?) 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > pergunta obrigatória sem resposta (HU-03, cenário 4) > a declaração precisa estar marcada (e conta como pergunta obrigatória na mensagem geral) 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > perguntas que só aparecem em certos casos > a data do fim da gripe é obrigatória só para quem teve gripe e os sintomas acabaram 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > perguntas que só aparecem em certos casos > resposta de pergunta que não aparece é descartada 1ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > perguntas que só aparecem em certos casos > o bloco de gestação só vale para quem não informou sexo masculino 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > perguntas que só aparecem em certos casos > câncer: a pergunta do tratamento só aparece para “outro tipo” 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > data impossível 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > data em outro formato 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > data no futuro 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > data antes do nascimento 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > a data de hoje é aceita 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > peso 19 é recusado 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > peso 301 é recusado 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > peso 70.55 é recusado 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > peso 70 é recusado 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > peso NaN é recusado 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > peso Infinity é recusado 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > peso true é recusado 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > peso 20 é aceito 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > peso 49.9 é aceito 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > peso 300 é aceito 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > sim/não precisa ser verdadeiro ou falso de verdade 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > escolha fora das opções é recusada 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > opção que não existe em pergunta de marcar várias é recusada 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > pergunta de marcar várias não aceita lista nem texto 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > valores inválidos > mensagem geral é a das respostas destacadas quando nada falta, só está errado 0ms
+ ✓ tests/triagem-modelo.test.ts > validação das respostas > ignora perguntas que o modelo não conhece 0ms
+ ✓ tests/triagem-datas.test.ts > datas da triagem > só aceita datas que existem no calendário 2ms
+ ✓ tests/triagem-datas.test.ts > datas da triagem > soma dias atravessando mês e ano 1ms
+ ✓ tests/triagem-datas.test.ts > datas da triagem > soma meses mantendo o dia do mês 0ms
+ ✓ tests/triagem-datas.test.ts > datas da triagem > se o dia não existe no mês de destino, vale o último dia do mês 0ms
+ ✓ tests/triagem-datas.test.ts > datas da triagem > soma prazos compostos (anos, meses e dias) 0ms
+ ✓ tests/triagem-datas.test.ts > datas da triagem > calcula a idade em anos completos (o aniversário já vale no dia) 0ms
+ ✓ tests/triagem-datas.test.ts > datas da triagem > formata como dia/mês/ano 0ms
+ ✓ tests/triagem-datas.test.ts > datas da triagem > usa a data de Brasília, mesmo quando em Londres já virou o dia 13ms
+ ✓ tests/triagem-datas.test.ts > datas da triagem > descreve o prazo em português 1ms
+
+ Test Files  4 passed (4)
+      Tests  192 passed (192)
+   Start at  12:30:17
+   Duration  1.98s (tests 61%, import 32%, transform 6%, worker 2%)
+
+    Isolate  4 workers spawned · ~135ms startup each (spawn + environment, per file)
+             at least ~404ms faster with isolate: false — reuses workers across files instead of one per file
+
+
+==============================================================================================
+Todos os testes do backend juntos (inclui cadastro, login, perfil e controle de acesso):
+ Test Files  7 passed (7)
+      Tests  315 passed (315)
+   Duration  5.70s (tests 62%, import 35%, transform 2%, worker 1%)

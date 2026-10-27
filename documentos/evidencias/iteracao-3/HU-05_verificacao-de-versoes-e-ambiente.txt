@@ -1,0 +1,89 @@
+Verificação de versões e do ambiente (mapa com instituições, HU-05 e RNF-008)
+Feita em 26/10/2026 e refeita no mesmo dia depois da troca do aplicativo para o Expo SDK 58 (o Expo Go do celular passou a abrir só o SDK 58).
+
+=== Ferramentas da máquina ===
+Node: v22.14.0   npm: 11.4.1   Docker (motor): 29.2.1   PostgreSQL do container: 16.15(Debian16.15-1.pgdg13+2)
+O Expo SDK 58 pede Node 22.13 ou mais novo (o expo 58.0.19 declara ^22.13.0 || ^24.3.0 || ^26.0.0 || >=27): o Node 22.14.0 atende.
+
+=== Servidor (pasta backend): pacotes principais ===
+  vitta-backend@1.0.0 C:\Users\user\Downloads\vitta\backend
+  +-- @prisma/adapter-pg@7.10.1
+  +-- @prisma/client@7.10.1
+  +-- @types/express@5.0.6
+  +-- @types/jsonwebtoken@9.0.10
+  +-- @types/node@22.20.5
+  +-- @types/pg@8.23.1
+  +-- @types/supertest@7.2.1
+  +-- bcryptjs@3.0.3
+  +-- dotenv@18.0.8
+  +-- express@5.3.0
+  +-- jsonwebtoken@9.0.3
+  +-- pg@8.23.1
+  +-- prisma@7.10.1
+  +-- supertest@7.3.1
+  +-- tsx@4.23.15
+  +-- typescript@7.0.2
+  +-- vitest@5.0.5
+  `-- zod@4.6.7
+  
+
+=== Aplicativo (pasta frontend): pacotes principais (Expo SDK 58) ===
+  vitta-frontend@1.0.0 C:\Users\user\Downloads\vitta\frontend
+  +-- @expo-google-fonts/poppins@0.4.1
+  +-- @expo-google-fonts/roboto@0.4.3
+  +-- @expo/ngrok@4.1.3
+  +-- @expo/vector-icons@15.1.1
+  +-- @react-navigation/bottom-tabs@7.21.0
+  +-- @react-navigation/native-stack@7.21.0
+  +-- @react-navigation/native@7.5.1
+  +-- @types/react@19.3.0
+  +-- expo-font@58.0.10
+  +-- expo-location@58.0.19
+  +-- expo-secure-store@58.0.2
+  +-- expo-status-bar@58.0.4
+  +-- expo@58.0.19
+  +-- react-native-maps@1.29.11
+  +-- react-native-safe-area-context@5.10.1
+  +-- react-native-screens@4.30.0
+  +-- react-native@0.88.0
+  +-- react@19.3.0
+  `-- typescript@6.0.3
+  
+
+=== O que mudou do SDK 57 para o SDK 58 ===
+  expo                          ~57.0.31 -> ~58.0.19
+  expo-font                     ~57.0.4  -> ~58.0.10
+  expo-location                 ~57.0.22 -> ~58.0.19
+  expo-secure-store             ~57.0.4  -> ~58.0.2
+  expo-status-bar               ~57.0.1  -> ~58.0.4
+  react                         19.2.3   -> 19.3.0
+  react-native                  0.86.3   -> 0.88.0
+  react-native-maps             1.27.2   -> 1.29.11
+  react-native-safe-area-context ~5.7.0  -> ~5.10.1
+  react-native-screens          ~4.26.0  -> ~4.30.0
+  @types/react                  ~19.2.4  -> ~19.3.0
+  Sem mudança: React Navigation (7.x), fontes, ícones, TypeScript 6.0.3, @expo/ngrok.
+  Ajustes no código por causa das novas versões: o tipo da referência do ScrollView (components/Tela.tsx) e o tipo de ListEmptyComponent das listas (screens/MapaScreen.tsx).
+
+=== Conferências feitas no aplicativo (SDK 58) ===
+- npx expo install --check (versões das bibliotecas do Expo SDK 58):
+    Dependencies are up to date
+- npx expo-doctor:
+    Running 20 checks on your project...
+    20/20 checks passed. No issues detected!
+- npm run typecheck (aplicativo): sem erros.
+- Empacotamento para Android (npx expo export --platform android): compila sem erros, 1082 módulos, pacote de 2,7 MB.
+- Instalação limpa a partir do package-lock.json (npm ci): sem erros (574 pacotes).
+- Plugin de localização no app.json: o Expo gera a permissão do iPhone com o texto em português e as permissões ACCESS_COARSE_LOCATION e ACCESS_FINE_LOCATION no Android, sem a permissão de localização em segundo plano.
+- Aplicativo em um navegador, com a localização do aparelho simulada: permissão concedida (com a precisão de 35 m), troca de raio para 5 km, busca por nome sem acento (acha o Hemocentro de Brasília a 19,2 km mesmo com o raio de 5 km), tela de detalhes (com Como chegar e Ligar, sem botão de agendar), permissão negada (frase exata da HU-05 e busca manual), GPS desligado, sem sinal, recuperação ao tocar em Tentar de novo e voltar ao app sem ler o GPS de novo em menos de 30 segundos.
+- Regressão do que já existia, com as abas novas: cadastro, login, formulário de elegibilidade (10 passos até o resultado), volta ao início, perfil, edição de dados e privacidade continuam funcionando.
+- Limite: no navegador não existe o mapa em si (a biblioteca react-native-maps só funciona no celular), então o desenho do mapa, do círculo e dos marcadores só pode ser conferido no Expo Go (roteiro em RNF-008_roteiro-de-gravacao-expo-go.md).
+
+=== Conferências feitas no servidor e no Docker (não mudaram com a troca do SDK) ===
+- npm run typecheck (servidor): sem erros. 367 testes automáticos passam (10 arquivos), 52 deles do mapa (HU-05). Relatório em HU-05_testes-automatizados.txt.
+- Docker: docker compose up --build api (na porta 3001, só para o teste) aplicou as migrações (nenhuma pendente), carregou as instituições (1 real e 7 de demonstração), ficou saudável e respondeu a /health e a /instituicoes. O container de teste foi removido em seguida.
+- Carga das instituições nos dois modos: padrão (1 real e 7 de demonstração) e INSTITUICOES_DEMO=false (1 real e 0 de demonstração, as 7 removidas). O banco voltou ao modo padrão.
+
+=== Avisos de segurança das bibliotecas (npm audit --omit=dev) ===
+- Servidor: 2 avisos (body-parser, usado pelo Express, e fast-uri). Corrigidos com npm audit fix, que só trocou duas versões no package-lock.json (body-parser 2.3.0 para 2.4.0 e fast-uri 3.1.8 para 3.1.9). Depois disso: 0 avisos, e os 367 testes continuam passando.
+- Aplicativo: 5 avisos de gravidade alta, todos dentro do @expo/cli (ferramenta de linha de comando do Expo que roda só no computador de quem desenvolve: node-forge e zod). Não vão para dentro do aplicativo do celular. O expo 58.0.19 é a versão mais nova publicada (tag latest) e o único "conserto" oferecido pelo npm seria voltar para uma versão antiga do expo, o que quebraria o projeto. Fica registrado para atualizar quando o Expo publicar uma versão nova do SDK 58.

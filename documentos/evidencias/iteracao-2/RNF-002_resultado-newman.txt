@@ -1,0 +1,101 @@
+newman
+
+VITTA - RNF-002 Controle de acesso (E2-3)
+
+Root 1. Cadastrar o doador A
+  POST http://localhost:3000/auth/cadastro [201 Created, 597B, 401ms]
+  Pass  Cadastro de A: 201
+
+Root 2. Cadastrar o doador B
+  POST http://localhost:3000/auth/cadastro [201 Created, 597B, 247ms]
+  Pass  Cadastro de B: 201
+
+Root 3. B informa telefone e tipo sanguíneo
+  PATCH http://localhost:3000/doadores/me [200 OK, 401B, 14ms]
+  Pass  B salvou os dados: 200
+
+Root 4. B responde ao formulário de elegibilidade (POST /doadores/me/formulario)
+  POST http://localhost:3000/doadores/me/formulario [201 Created, 967B, 30ms]
+  Pass  Formulário de B enviado: 201
+  Pass  Resultado de B: INAPTO (peso abaixo de 50 kg)
+
+Root 5. A vê o próprio perfil (GET /doadores/me)
+  GET http://localhost:3000/doadores/me [200 OK, 392B, 8ms]
+  Pass  A vê o próprio perfil: 200
+  Pass  É mesmo o perfil de A
+
+Root 6. A tenta VER o perfil de B (GET /doadores/{idB})
+  GET http://localhost:3000/doadores/3a08912f-dd32-446f-9b06-4bc3840d1462 [403 Forbidden, 298B, 5ms]
+  Pass  A tentativa de ver o perfil de B é recusada (403 ou 404)
+  Pass  A resposta não mostra nenhum dado de B
+
+Root 7. A tenta ALTERAR o perfil de B (PATCH /doadores/{idB})
+  PATCH http://localhost:3000/doadores/3a08912f-dd32-446f-9b06-4bc3840d1462 [403 Forbidden, 298B, 5ms]
+  Pass  A tentativa de alterar o perfil de B é recusada (403 ou 404)
+  Pass  A resposta não mostra nenhum dado de B
+
+Root 8. A tenta EXCLUIR a conta de B (DELETE /doadores/{idB})
+  DELETE http://localhost:3000/doadores/3a08912f-dd32-446f-9b06-4bc3840d1462 [403 Forbidden, 298B, 4ms]
+  Pass  A tentativa de excluir a conta de B é recusada (403 ou 404)
+  Pass  A resposta não mostra nenhum dado de B
+
+Root 9. A tenta VER o FORMULÁRIO de B (GET /doadores/{idB}/formulario)
+  GET http://localhost:3000/doadores/3a08912f-dd32-446f-9b06-4bc3840d1462/formulario [403 Forbidden, 298B, 6ms]
+  Pass  A tentativa de ver o formulário de B é recusada (403 ou 404)
+  Pass  A resposta não mostra nenhum dado de B
+
+Root 10. A tenta RESPONDER o formulário no lugar de B (POST /doadores/{idB}/formulario)
+  POST http://localhost:3000/doadores/3a08912f-dd32-446f-9b06-4bc3840d1462/formulario [403 Forbidden, 298B, 5ms]
+  Pass  A tentativa de responder o formulário no lugar de B é recusada (403 ou 404)
+  Pass  A resposta não mostra nenhum dado de B
+
+Root 11. A tenta baixar as perguntas pelo caminho de B (GET /doadores/{idB}/formulario/modelo)
+  GET http://localhost:3000/doadores/3a08912f-dd32-446f-9b06-4bc3840d1462/formulario/modelo [403 Forbidden, 298B, 4ms]
+  Pass  A tentativa de usar o caminho do formulário de B é recusada (403 ou 404)
+  Pass  A resposta não mostra nenhum dado de B
+
+Root 12. B continua com os mesmos dados (GET /doadores/me com o token de B)
+  GET http://localhost:3000/doadores/me [200 OK, 401B, 5ms]
+  Pass  B ainda existe: 200
+  Pass  Os dados de B estão intactos
+
+Root 13. B continua com o mesmo formulário (GET /doadores/me/formulario com o token de B)
+  GET http://localhost:3000/doadores/me/formulario [200 OK, 962B, 6ms]
+  Pass  Formulário de B existe: 200
+  Pass  O formulário de B está intacto
+
+Root 14. Sem token: GET /doadores/{idB}
+  GET http://localhost:3000/doadores/3a08912f-dd32-446f-9b06-4bc3840d1462 [401 Unauthorized, 293B, 2ms]
+  Pass  Sem token: 401
+
+Root 15. Sem token: GET /doadores/me/formulario
+  GET http://localhost:3000/doadores/me/formulario [401 Unauthorized, 293B, 2ms]
+  Pass  Sem token: 401
+
+Root 16. Limpeza: A exclui a própria conta
+  DELETE http://localhost:3000/doadores/me [204 No Content, 111B, 6ms]
+  Pass  Conta de A excluída: 204
+
+Root 17. Limpeza: B exclui a própria conta (e o formulário vai junto)
+  DELETE http://localhost:3000/doadores/me [204 No Content, 111B, 6ms]
+  Pass  Conta de B excluída: 204
+
+-------------------------------------------------------------------
+|                         |          executed |            failed |
+--------------------------+-------------------+--------------------
+|              iterations |                 1 |                 0 |
+--------------------------+-------------------+--------------------
+|                requests |                17 |                 0 |
+--------------------------+-------------------+--------------------
+|            test-scripts |                17 |                 0 |
+--------------------------+-------------------+--------------------
+|      prerequest-scripts |                 2 |                 0 |
+--------------------------+-------------------+--------------------
+|              assertions |                27 |                 0 |
+-------------------------------------------------------------------
+| total run duration: 2.1s                                        |
+-------------------------------------------------------------------
+| total data received: 3.42kB (approx)                            |
+-------------------------------------------------------------------
+| average response time: 44ms [min: 2ms, max: 401ms, s.d.: 105ms] |
+-------------------------------------------------------------------

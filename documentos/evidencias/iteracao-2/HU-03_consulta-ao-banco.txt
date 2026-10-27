@@ -1,0 +1,87 @@
+Evidência da E2-2 (HU-03): formulário de análise. Gerada em 19/10/2026, 12:29:14 (horário de Brasília).
+API: http://localhost:3000  |  banco: PostgreSQL do Docker (vitta-db-1)  |  hoje no Brasil: 19/10/2026
+
+=== 1. O que a API respondeu a cada formulário (POST /doadores/me/formulario) ===
+
+Cenário 1 - apto
+  HTTP 201  resultado: APTO
+  mensagem: Ótimo! Pelas suas respostas, você pode agendar a sua doação. A decisão final é da triagem no hemocentro.
+  preenchido em: 2026-10-19T15:29:14.874Z  |  válido até: 18/11/2026  |  liberado em: -
+  agendamento liberado hoje: sim
+
+Cenário 2 - inapto temporário (tatuagem há 3 dias, em local seguro)
+  HTTP 201  resultado: INAPTO_TEMPORARIO
+  mensagem: No momento você não está apto(a) para realizar doações. O agendamento estará disponível a partir de 23/10/2026.
+  preenchido em: 2026-10-19T15:29:14.882Z  |  válido até: 18/11/2026  |  liberado em: 23/10/2026
+  agendamento liberado hoje: não
+  motivo (TEMPORARIO): Tatuagem recente: é preciso esperar 7 dias. Você poderá doar a partir de 23/10/2026.  [Anexo 2 (parte A); Art. 66, VII]
+
+Inapto (peso de 49 kg)
+  HTTP 201  resultado: INAPTO
+  mensagem: Pelas suas respostas, a doação de sangue não é indicada para você. Se tiver dúvidas, converse com a equipe de um hemocentro.
+  preenchido em: 2026-10-19T15:29:14.890Z  |  válido até: 18/11/2026  |  liberado em: -
+  agendamento liberado hoje: não
+  motivo (INAPTO): Você precisa ter pelo menos 50 kg para doar. Em casos especiais, o médico do hemocentro pode avaliar.  [Art. 40]
+
+=== 2. Cenário 4 - perguntas obrigatórias em branco (não grava nada) ===
+
+HTTP 400
+{
+  "mensagem": "Responda todas as perguntas obrigatórias para continuar.",
+  "campos": {
+    "bemHoje": "Esta pergunta é obrigatória.",
+    "peso": "Esta pergunta é obrigatória."
+  }
+}
+
+=== 3. Consulta ao banco: data do preenchimento e validade (horário de Brasília; o banco guarda em UTC) ===
+
+                      doador                      |     resultado     |  preenchido_em   | valido_ate | dias_de_validade | liberado_em | versao_regras | motivos 
+--------------------------------------------------+-------------------+------------------+------------+------------------+-------------+---------------+---------
+ evidencia.1792423754086.apto@exemplo.vitta       | APTO              | 19/10/2026 12:29 | 18/11/2026 |               30 |             | 2026-09-30    |       0
+ evidencia.1792423754086.inapto@exemplo.vitta     | INAPTO            | 19/10/2026 12:29 | 18/11/2026 |               30 |             | 2026-09-30    |       1
+ evidencia.1792423754086.temporario@exemplo.vitta | INAPTO_TEMPORARIO | 19/10/2026 12:29 | 18/11/2026 |               30 | 23/10/2026  | 2026-09-30    |       1
+(3 rows)
+
+
+=== 4. Estrutura da tabela ===
+
+                         Table "public.formularios_elegibilidade"
+    Column    |              Type              | Collation | Nullable |      Default      
+--------------+--------------------------------+-----------+----------+-------------------
+ id           | text                           |           | not null | 
+ doadorId     | text                           |           | not null | 
+ preenchidoEm | timestamp(3) without time zone |           | not null | CURRENT_TIMESTAMP
+ validoAte    | date                           |           | not null | 
+ resultado    | "ResultadoElegibilidade"       |           | not null | 
+ liberadoEm   | date                           |           |          | 
+ mensagem     | text                           |           | not null | 
+ motivos      | jsonb                          |           | not null | 
+ avisos       | jsonb                          |           | not null | 
+ versaoRegras | text                           |           | not null | 
+ respostas    | jsonb                          |           | not null | 
+Indexes:
+    "formularios_elegibilidade_pkey" PRIMARY KEY, btree (id)
+    "formularios_elegibilidade_doadorId_key" UNIQUE, btree ("doadorId")
+Foreign-key constraints:
+    "formularios_elegibilidade_doadorId_fkey" FOREIGN KEY ("doadorId") REFERENCES doadores(id) ON UPDATE CASCADE ON DELETE CASCADE
+
+
+=== 5. Limpeza: excluir as contas apaga os formulários (HU-02, exclusão em cascata) ===
+
+DELETE /doadores/me (apto): HTTP 204
+DELETE /doadores/me (temporario): HTTP 204
+DELETE /doadores/me (inapto): HTTP 204
+
+ formularios_restantes_das_contas_de_teste 
+-------------------------------------------
+                                         0
+(1 row)
+
+
+ contas_de_teste_restantes 
+---------------------------
+                         0
+(1 row)
+
+

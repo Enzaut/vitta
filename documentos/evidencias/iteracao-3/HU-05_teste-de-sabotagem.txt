@@ -1,0 +1,47 @@
+Evidência da HU-05 (mapa com instituições): teste de sabotagem das regras do servidor
+Feito em 26/10/2026.
+
+Para provar que os testes realmente pegam um erro de regra, cada regra abaixo foi alterada de propósito
+em backend/src/services/InstituicaoService.ts, uma de cada vez, e os testes de tests/instituicoes.test.ts
+(31 testes) rodaram.
+
+Resultado: toda alteração foi detectada (nenhuma passou sem que algum teste falhasse).
+
+  Alteração feita de propósito                                          Testes que falharam
+  --------------------------------------------------------------------  -------------------
+  Raio folgado: o limite de 5 km passa a aceitar até 6 km                         3
+  Raio apertado: o limite de 5 km passa a aceitar só até 4 km                     5
+  Sem ordenar por distância (fica a ordem do banco, por nome)                     6
+  Busca sem tirar os acentos ("sao joao" deixa de achar "São João")               1
+  Busca passa a respeitar o raio (deveria ignorar, cenários 3 e 5)                2
+  Raio padrão de 20 km vira 10 km (RN07)                                          1
+  Distância arredondada para o km inteiro, em vez de 0,1 km                       2
+
+Depois de cada rodada o arquivo foi restaurado. No fim, InstituicaoService.ts voltou idêntico ao
+original (conferido byte a byte) e os 31 testes voltaram a passar (0 falhas).
+
+Detalhe do que cada alteração derrubou:
+
+  Raio folgado (6 km)
+    - raio de 5 km: traz só as que estão dentro, da mais perto para a mais longe
+    - 4,999 km entra no raio de 5 km e 5,001 km fica de fora (valores-limite)
+    - busca em branco conta como sem busca
+  Raio apertado (4 km)
+    - raio de 5 km ..., valores-limite, aumentar o raio para 20 km (cenário 4), raio padrão de 20 km, busca em branco
+  Sem ordenar por distância
+    - raio de 5 km, aumentar o raio para 20 km, raio padrão de 20 km, com busca o raio não vale,
+      resultados da busca do mais perto para o mais longe, busca em branco
+  Busca sem tirar os acentos
+    - acha pelo nome, sem se importar com acento ou maiúsculas
+  Busca passa a respeitar o raio
+    - com busca, o raio não vale: acha a instituição mesmo a 30 km (e a 150 km)
+    - com busca e localização, os resultados trazem a distância e vêm do mais perto para o mais longe
+  Raio padrão de 10 km
+    - sem informar o raio, vale o padrão de 20 km
+  Distância arredondada para o km inteiro
+    - aumentar o raio para 20 km (a distância de 19,9 km vira 20)
+    - resultados da busca trazem a distância
+
+Como repetir: mude um valor em InstituicaoService.ts (por exemplo, RAIO_PADRAO_KM = 20 para 10),
+rode `npx vitest run tests/instituicoes.test.ts` na pasta backend e veja o teste do raio padrão falhar.
+Desfaça a mudança em seguida.

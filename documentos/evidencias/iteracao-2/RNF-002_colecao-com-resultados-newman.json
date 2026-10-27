@@ -1,0 +1,7384 @@
+{
+  "collection": {
+    "item": [
+      {
+        "id": "f5d5f101-57df-43c6-af12-6e7dce7235e6",
+        "name": "1. Cadastrar o doador A",
+        "request": {
+          "description": {
+            "content": "Cria a conta A e guarda o token e o id dela nas variáveis da coleção.",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "auth",
+              "cadastro"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"nome\": \"Doador A\",\n  \"email\": \"{{emailA}}\",\n  \"dataNascimento\": \"1995-03-15\",\n  \"senha\": \"Senha@2026\",\n  \"confirmarSenha\": \"Senha@2026\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "32e654ac-a0c9-4bfb-8ec3-8303408e0964",
+              "type": "text/javascript",
+              "exec": [
+                "pm.collectionVariables.set(\"emailA\", \"a.\" + Date.now() + \"@teste.vitta\");"
+              ],
+              "_lastExecutionId": "e0140c98-fe29-41c1-94f7-015c45ed5404"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "1064559c-295a-4ffd-a5eb-3a5261a67f98",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Cadastro de A: 201\", function () { pm.response.to.have.status(201); });",
+                "const json = pm.response.json();",
+                "pm.collectionVariables.set(\"tokenA\", json.token);",
+                "pm.collectionVariables.set(\"idA\", json.doador.id);"
+              ],
+              "_lastExecutionId": "87f7fa09-ecf5-494e-bb39-bbe42f899ecd"
+            }
+          }
+        ]
+      },
+      {
+        "id": "b7b13b85-f62e-46a6-9bff-69a5c59eb9af",
+        "name": "2. Cadastrar o doador B",
+        "request": {
+          "description": {
+            "content": "Cria a conta B e guarda o token e o id dela.",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "auth",
+              "cadastro"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"nome\": \"Doador B\",\n  \"email\": \"{{emailB}}\",\n  \"dataNascimento\": \"1990-07-20\",\n  \"senha\": \"Senha@2026\",\n  \"confirmarSenha\": \"Senha@2026\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "prerequest",
+            "script": {
+              "id": "1c909ce3-74f1-41ac-b588-3cb903d0950d",
+              "type": "text/javascript",
+              "exec": [
+                "pm.collectionVariables.set(\"emailB\", \"b.\" + Date.now() + \"@teste.vitta\");"
+              ],
+              "_lastExecutionId": "394e1abb-54f8-48df-97e7-a96792a6d0d4"
+            }
+          },
+          {
+            "listen": "test",
+            "script": {
+              "id": "b4324f26-11f0-4420-9289-02936e3052d4",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Cadastro de B: 201\", function () { pm.response.to.have.status(201); });",
+                "const json = pm.response.json();",
+                "pm.collectionVariables.set(\"tokenB\", json.token);",
+                "pm.collectionVariables.set(\"idB\", json.doador.id);"
+              ],
+              "_lastExecutionId": "ea5292c4-bef8-41e8-a1c4-c15e3d8d87d1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "c4835f77-8f03-4431-a7d6-6aeada33d08d",
+        "name": "3. B informa telefone e tipo sanguíneo",
+        "request": {
+          "description": {
+            "content": "Dá a B dados que dá para notar se alguém mexer.",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "me"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenB}}"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "PATCH",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"telefone\": \"11988887777\",\n  \"tipoSanguineo\": \"O-\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "63c0bf5f-21d1-4fe0-837f-bccc6b2849fe",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"B salvou os dados: 200\", function () { pm.response.to.have.status(200); });"
+              ],
+              "_lastExecutionId": "04f3f82b-d136-448f-be61-9d9492180c63"
+            }
+          }
+        ]
+      },
+      {
+        "id": "e0896be1-087c-4e77-bc77-e8d84699d185",
+        "name": "4. B responde ao formulário de elegibilidade (POST /doadores/me/formulario)",
+        "request": {
+          "description": {
+            "content": "B responde ao formulário da HU-03 com 49 kg. Esperado: 201 e resultado INAPTO (por peso).",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "me",
+              "formulario"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenB}}"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"respostas\": {\n    \"bemHoje\": true,\n    \"gripe\": false,\n    \"sinaisAlerta\": false,\n    \"peso\": 49,\n    \"sexo\": \"F\",\n    \"jaDoou\": false,\n    \"procedimentos\": {},\n    \"piercingBocaGenital\": \"nao\",\n    \"remedios\": {},\n    \"vacinas\": {},\n    \"cirurgias\": {},\n    \"dentista\": {},\n    \"transfusao\": false,\n    \"condicoes\": {},\n    \"ist\": false,\n    \"riscoSexual\": {},\n    \"drogas\": {},\n    \"malaria\": false,\n    \"gestacao\": {},\n    \"declaracao\": true\n  }\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "fcfd5970-8a37-4f9a-9049-b5be159498cc",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Formulário de B enviado: 201\", function () { pm.response.to.have.status(201); });",
+                "const f = pm.response.json().formulario;",
+                "pm.test(\"Resultado de B: INAPTO (peso abaixo de 50 kg)\", function () { pm.expect(f.resultado).to.eql(\"INAPTO\"); });",
+                "pm.collectionVariables.set(\"preenchidoEmB\", f.preenchidoEm);"
+              ],
+              "_lastExecutionId": "d9ea7824-5fbe-4710-b4df-d875eb23d1ec"
+            }
+          }
+        ]
+      },
+      {
+        "id": "828e9dc7-dcfd-4424-99c7-71cf9b7de6bb",
+        "name": "5. A vê o próprio perfil (GET /doadores/me)",
+        "request": {
+          "description": {
+            "content": "Controle: com o próprio token, A acessa os próprios dados.",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "me"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenA}}"
+            }
+          ],
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "621f2ad1-7ed9-4885-a08a-acef332b43f2",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"A vê o próprio perfil: 200\", function () { pm.response.to.have.status(200); });",
+                "pm.test(\"É mesmo o perfil de A\", function () { pm.expect(pm.response.json().doador.id).to.eql(pm.collectionVariables.get(\"idA\")); });"
+              ],
+              "_lastExecutionId": "77c73c25-1460-48ab-b84e-414fa93cd25b"
+            }
+          }
+        ]
+      },
+      {
+        "id": "92e31c0f-004c-41f4-a44e-18a75a8d803c",
+        "name": "6. A tenta VER o perfil de B (GET /doadores/{idB})",
+        "request": {
+          "description": {
+            "content": "Com o token de A, usa o id de B no caminho. Esperado: 403 (ou 404).",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "{{idB}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenA}}"
+            }
+          ],
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "46d22f47-6218-4c35-979f-c791db89600d",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"A tentativa de ver o perfil de B é recusada (403 ou 404)\", function () {",
+                "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                "});",
+                "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                "  const texto = pm.response.text();",
+                "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                "  pm.expect(texto).to.not.include(\"Doador B\");",
+                "  pm.expect(texto).to.not.include(\"11988887777\");",
+                "});"
+              ],
+              "_lastExecutionId": "52aeeb18-85ef-454b-b62e-37541c1db86e"
+            }
+          }
+        ]
+      },
+      {
+        "id": "58aeaadd-d34e-4127-9128-fcef8ab530a6",
+        "name": "7. A tenta ALTERAR o perfil de B (PATCH /doadores/{idB})",
+        "request": {
+          "description": {
+            "content": "Com o token de A, tenta mudar o telefone e o tipo sanguíneo de B. Esperado: 403 (ou 404).",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "{{idB}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenA}}"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "PATCH",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"telefone\": \"61999990000\",\n  \"tipoSanguineo\": \"A+\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "0f6b9f39-60e0-4693-a77c-857c4a2ae385",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"A tentativa de alterar o perfil de B é recusada (403 ou 404)\", function () {",
+                "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                "});",
+                "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                "  const texto = pm.response.text();",
+                "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                "  pm.expect(texto).to.not.include(\"Doador B\");",
+                "  pm.expect(texto).to.not.include(\"11988887777\");",
+                "});"
+              ],
+              "_lastExecutionId": "8c5f58d9-e8a5-493c-b8bf-21a8a14cebe1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "fbb52eea-d5ff-49e9-b767-21e8abf38180",
+        "name": "8. A tenta EXCLUIR a conta de B (DELETE /doadores/{idB})",
+        "request": {
+          "description": {
+            "content": "Com o token de A, tenta apagar a conta de B. Esperado: 403 (ou 404).",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "{{idB}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenA}}"
+            }
+          ],
+          "method": "DELETE"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "6f97bd2b-7293-40c7-8559-4a1aa11c9af0",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"A tentativa de excluir a conta de B é recusada (403 ou 404)\", function () {",
+                "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                "});",
+                "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                "  const texto = pm.response.text();",
+                "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                "  pm.expect(texto).to.not.include(\"Doador B\");",
+                "  pm.expect(texto).to.not.include(\"11988887777\");",
+                "});"
+              ],
+              "_lastExecutionId": "682bccb9-e5ea-4301-9c69-e2a762d5de15"
+            }
+          }
+        ]
+      },
+      {
+        "id": "7be0df37-2703-4ea9-a358-e28a93daf9ec",
+        "name": "9. A tenta VER o FORMULÁRIO de B (GET /doadores/{idB}/formulario)",
+        "request": {
+          "description": {
+            "content": "Com o token de A, tenta ler o formulário de elegibilidade de B (HU-03). Esperado: 403 (ou 404), sem o resultado de B.",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "{{idB}}",
+              "formulario"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenA}}"
+            }
+          ],
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "c7ccce47-140c-4a8e-8ae5-423cbc116119",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"A tentativa de ver o formulário de B é recusada (403 ou 404)\", function () {",
+                "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                "});",
+                "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                "  const texto = pm.response.text();",
+                "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                "  pm.expect(texto).to.not.include(\"Doador B\");",
+                "  pm.expect(texto).to.not.include(\"11988887777\");",
+                "  pm.expect(texto).to.not.include(\"INAPTO\");",
+                "  pm.expect(texto).to.not.include(\"peso\");",
+                "});"
+              ],
+              "_lastExecutionId": "6848d7a0-ab53-4d0c-bec4-ebf43a51f950"
+            }
+          }
+        ]
+      },
+      {
+        "id": "a18e0bc1-66d6-44e2-95e3-5a2e61016a94",
+        "name": "10. A tenta RESPONDER o formulário no lugar de B (POST /doadores/{idB}/formulario)",
+        "request": {
+          "description": {
+            "content": "Com o token de A, tenta enviar respostas como se fosse B. Esperado: 403 (ou 404), e o formulário de B não muda.",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "{{idB}}",
+              "formulario"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenA}}"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"respostas\": {\n    \"bemHoje\": true,\n    \"gripe\": false,\n    \"sinaisAlerta\": false,\n    \"peso\": 80,\n    \"sexo\": \"F\",\n    \"jaDoou\": false,\n    \"procedimentos\": {},\n    \"piercingBocaGenital\": \"nao\",\n    \"remedios\": {},\n    \"vacinas\": {},\n    \"cirurgias\": {},\n    \"dentista\": {},\n    \"transfusao\": false,\n    \"condicoes\": {},\n    \"ist\": false,\n    \"riscoSexual\": {},\n    \"drogas\": {},\n    \"malaria\": false,\n    \"gestacao\": {},\n    \"declaracao\": true\n  }\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "b14c0b31-862f-4aa8-97d3-017cfc59353f",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"A tentativa de responder o formulário no lugar de B é recusada (403 ou 404)\", function () {",
+                "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                "});",
+                "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                "  const texto = pm.response.text();",
+                "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                "  pm.expect(texto).to.not.include(\"Doador B\");",
+                "  pm.expect(texto).to.not.include(\"11988887777\");",
+                "});"
+              ],
+              "_lastExecutionId": "903eff8b-46f7-4471-9d56-93bd94aea327"
+            }
+          }
+        ]
+      },
+      {
+        "id": "14e60fad-7083-4a57-81cf-71f3c18892e7",
+        "name": "11. A tenta baixar as perguntas pelo caminho de B (GET /doadores/{idB}/formulario/modelo)",
+        "request": {
+          "description": {
+            "content": "Qualquer caminho /doadores/{id}/... com o id de outro doador é recusado. Esperado: 403 (ou 404).",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "{{idB}}",
+              "formulario",
+              "modelo"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenA}}"
+            }
+          ],
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "0c897f12-3da0-435f-ae9c-0ebfed121da6",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"A tentativa de usar o caminho do formulário de B é recusada (403 ou 404)\", function () {",
+                "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                "});",
+                "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                "  const texto = pm.response.text();",
+                "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                "  pm.expect(texto).to.not.include(\"Doador B\");",
+                "  pm.expect(texto).to.not.include(\"11988887777\");",
+                "});"
+              ],
+              "_lastExecutionId": "2c295b31-cfc9-4968-8490-ea4689c824b5"
+            }
+          }
+        ]
+      },
+      {
+        "id": "c6156e23-18d2-49ab-9451-05378d437f17",
+        "name": "12. B continua com os mesmos dados (GET /doadores/me com o token de B)",
+        "request": {
+          "description": {
+            "content": "Depois de todas as tentativas de A, a conta de B existe e nada mudou.",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "me"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenB}}"
+            }
+          ],
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "25380934-a064-4f37-af3f-f2d4e9a4f07b",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"B ainda existe: 200\", function () { pm.response.to.have.status(200); });",
+                "const b = pm.response.json().doador;",
+                "pm.test(\"Os dados de B estão intactos\", function () {",
+                "  pm.expect(b.id).to.eql(pm.collectionVariables.get(\"idB\"));",
+                "  pm.expect(b.nome).to.eql(\"Doador B\");",
+                "  pm.expect(b.telefone).to.eql(\"11988887777\");",
+                "  pm.expect(b.tipoSanguineo).to.eql(\"O-\");",
+                "});"
+              ],
+              "_lastExecutionId": "c999b249-293a-4fb2-a33f-b53ef2a691f8"
+            }
+          }
+        ]
+      },
+      {
+        "id": "1e7b59de-18dc-4880-91f9-4f99228a2ea2",
+        "name": "13. B continua com o mesmo formulário (GET /doadores/me/formulario com o token de B)",
+        "request": {
+          "description": {
+            "content": "O envio feito por A no passo 10 não pode ter mudado o formulário de B: continua INAPTO, com a mesma data de preenchimento.",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "me",
+              "formulario"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenB}}"
+            }
+          ],
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "bee8c132-0397-475d-92c4-1c8695c92fbc",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Formulário de B existe: 200\", function () { pm.response.to.have.status(200); });",
+                "const f = pm.response.json().formulario;",
+                "pm.test(\"O formulário de B está intacto\", function () {",
+                "  pm.expect(f.resultado).to.eql(\"INAPTO\");",
+                "  pm.expect(f.preenchidoEm).to.eql(pm.collectionVariables.get(\"preenchidoEmB\"));",
+                "});"
+              ],
+              "_lastExecutionId": "3d00664c-cad5-41d8-9867-0076f1519a0f"
+            }
+          }
+        ]
+      },
+      {
+        "id": "f6eb7a80-6e7f-4e70-908f-133c343f1f57",
+        "name": "14. Sem token: GET /doadores/{idB}",
+        "request": {
+          "description": {
+            "content": "Sem token, a API responde 401 antes mesmo de olhar o id.",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "{{idB}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "ec2561f2-3aa0-4545-bc3f-5e8ad5b487a5",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Sem token: 401\", function () { pm.response.to.have.status(401); });"
+              ],
+              "_lastExecutionId": "5a20a7a5-28f2-4abf-8595-94b76efe09e3"
+            }
+          }
+        ]
+      },
+      {
+        "id": "1cdc16c2-44a3-439e-9fc2-c0bd266b927e",
+        "name": "15. Sem token: GET /doadores/me/formulario",
+        "request": {
+          "description": {
+            "content": "O formulário também exige login.",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "me",
+              "formulario"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "93181b1a-f4c0-4e7a-831b-7fbcb86286e8",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Sem token: 401\", function () { pm.response.to.have.status(401); });"
+              ],
+              "_lastExecutionId": "e0500ca6-37ab-430a-ba2b-12b3feb2daa5"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ad99f726-ff5a-4a47-8798-c20c1b906b9d",
+        "name": "16. Limpeza: A exclui a própria conta",
+        "request": {
+          "description": {
+            "content": "Remove a conta de teste A.",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "me"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenA}}"
+            }
+          ],
+          "method": "DELETE"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "054f25e7-3d18-473b-97ea-b61098f16e83",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Conta de A excluída: 204\", function () { pm.response.to.have.status(204); });"
+              ],
+              "_lastExecutionId": "46a52a8d-00d1-4d50-9147-da70b66dcc63"
+            }
+          }
+        ]
+      },
+      {
+        "id": "06fc7ba7-c9cf-4580-a16e-7eacb8793a5d",
+        "name": "17. Limpeza: B exclui a própria conta (e o formulário vai junto)",
+        "request": {
+          "description": {
+            "content": "Remove a conta de teste B. O formulário de B é apagado em cascata (HU-02).",
+            "type": "text/plain"
+          },
+          "url": {
+            "path": [
+              "doadores",
+              "me"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer {{tokenB}}"
+            }
+          ],
+          "method": "DELETE"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "70212737-a1cd-458e-801c-94f96c7c2f63",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Conta de B excluída: 204\", function () { pm.response.to.have.status(204); });"
+              ],
+              "_lastExecutionId": "e5ecd5fa-a3ea-45e9-9123-43515d025264"
+            }
+          }
+        ]
+      }
+    ],
+    "event": [],
+    "variable": [
+      {
+        "type": "any",
+        "value": "http://localhost:3000",
+        "key": "baseUrl"
+      }
+    ],
+    "info": {
+      "_postman_id": "5e556581-ef07-4ee4-961c-245e8baf4d72",
+      "name": "VITTA - RNF-002 Controle de acesso (E2-3)",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+      "description": {
+        "content": "Cenário da matriz de verificação: com o token do doador A, chamar as rotas de perfil, formulário e exclusão usando o id do doador B. Resultado esperado: erro 403 (ou 404) em todas, sem vazar dados, e a conta e o formulário de B continuam intactos.\n\nComo usar: suba a API (npm run dev na pasta backend) e rode a coleção inteira (Collection Runner do Postman ou `npx newman run`). Para outro ambiente, mude a variável baseUrl.",
+        "type": "text/plain"
+      }
+    }
+  },
+  "environment": {
+    "id": "e956ef20-bd7e-484a-a1e0-ed2b7f67bc2f",
+    "values": [
+      {
+        "type": "any",
+        "value": "http://localhost:3000",
+        "key": "baseUrl"
+      }
+    ]
+  },
+  "globals": {
+    "id": "85f068f3-7e64-47d7-a61d-5a578bfac104",
+    "values": []
+  },
+  "run": {
+    "stats": {
+      "iterations": {
+        "total": 1,
+        "pending": 0,
+        "failed": 0
+      },
+      "items": {
+        "total": 17,
+        "pending": 0,
+        "failed": 0
+      },
+      "scripts": {
+        "total": 19,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequests": {
+        "total": 17,
+        "pending": 0,
+        "failed": 0
+      },
+      "requests": {
+        "total": 17,
+        "pending": 0,
+        "failed": 0
+      },
+      "tests": {
+        "total": 17,
+        "pending": 0,
+        "failed": 0
+      },
+      "assertions": {
+        "total": 27,
+        "pending": 0,
+        "failed": 0
+      },
+      "testScripts": {
+        "total": 17,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequestScripts": {
+        "total": 2,
+        "pending": 0,
+        "failed": 0
+      }
+    },
+    "timings": {
+      "responseAverage": 44.47058823529411,
+      "responseMin": 2,
+      "responseMax": 401,
+      "responseSd": 105.61702049054894,
+      "dnsAverage": 0,
+      "dnsMin": 0,
+      "dnsMax": 0,
+      "dnsSd": 0,
+      "firstByteAverage": 0,
+      "firstByteMin": 0,
+      "firstByteMax": 0,
+      "firstByteSd": 0,
+      "started": 1792423896980,
+      "completed": 1792423899147
+    },
+    "executions": [
+      {
+        "cursor": {
+          "position": 0,
+          "iteration": 0,
+          "length": 17,
+          "cycles": 1,
+          "empty": false,
+          "eof": false,
+          "bof": true,
+          "cr": false,
+          "ref": "13f32579-1504-4aaa-90ff-1ae8726fe3eb",
+          "httpRequestId": "d3d7c1af-edcf-405b-b9d1-e7864c90d797"
+        },
+        "item": {
+          "id": "f5d5f101-57df-43c6-af12-6e7dce7235e6",
+          "name": "1. Cadastrar o doador A",
+          "request": {
+            "description": {
+              "content": "Cria a conta A e guarda o token e o id dela nas variáveis da coleção.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "auth",
+                "cadastro"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Doador A\",\n  \"email\": \"{{emailA}}\",\n  \"dataNascimento\": \"1995-03-15\",\n  \"senha\": \"Senha@2026\",\n  \"confirmarSenha\": \"Senha@2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "32e654ac-a0c9-4bfb-8ec3-8303408e0964",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"emailA\", \"a.\" + Date.now() + \"@teste.vitta\");"
+                ],
+                "_lastExecutionId": "e0140c98-fe29-41c1-94f7-015c45ed5404"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "1064559c-295a-4ffd-a5eb-3a5261a67f98",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Cadastro de A: 201\", function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set(\"tokenA\", json.token);",
+                  "pm.collectionVariables.set(\"idA\", json.doador.id);"
+                ],
+                "_lastExecutionId": "87f7fa09-ecf5-494e-bb39-bbe42f899ecd"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Cria a conta A e guarda o token e o id dela nas variáveis da coleção.",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "auth",
+              "cadastro"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "1d350893-d6c3-45fb-b71d-38dd5e4ec82e",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "159",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"nome\": \"Doador A\",\n  \"email\": \"a.1792423896997@teste.vitta\",\n  \"dataNascimento\": \"1995-03-15\",\n  \"senha\": \"Senha@2026\",\n  \"confirmarSenha\": \"Senha@2026\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "078cc135-f6c6-433f-84da-b50094ed274a",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "378"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"17a-/sxR2HF7NI2xf+0KYU+Q6ivrlsk\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:37 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              116,
+              111,
+              107,
+              101,
+              110,
+              34,
+              58,
+              34,
+              101,
+              121,
+              74,
+              104,
+              98,
+              71,
+              99,
+              105,
+              79,
+              105,
+              74,
+              73,
+              85,
+              122,
+              73,
+              49,
+              78,
+              105,
+              73,
+              115,
+              73,
+              110,
+              82,
+              53,
+              99,
+              67,
+              73,
+              54,
+              73,
+              107,
+              112,
+              88,
+              86,
+              67,
+              74,
+              57,
+              46,
+              101,
+              121,
+              74,
+              112,
+              89,
+              88,
+              81,
+              105,
+              79,
+              106,
+              69,
+              51,
+              79,
+              84,
+              73,
+              48,
+              77,
+              106,
+              77,
+              52,
+              79,
+              84,
+              99,
+              115,
+              73,
+              109,
+              86,
+              52,
+              99,
+              67,
+              73,
+              54,
+              77,
+              84,
+              99,
+              53,
+              77,
+              122,
+              65,
+              121,
+              79,
+              68,
+              89,
+              53,
+              78,
+              121,
+              119,
+              105,
+              99,
+              51,
+              86,
+              105,
+              73,
+              106,
+              111,
+              105,
+              77,
+              84,
+              107,
+              49,
+              90,
+              71,
+              86,
+              106,
+              90,
+              71,
+              73,
+              116,
+              77,
+              122,
+              89,
+              48,
+              78,
+              121,
+              48,
+              48,
+              77,
+              87,
+              90,
+              107,
+              76,
+              87,
+              70,
+              109,
+              77,
+              68,
+              65,
+              116,
+              79,
+              68,
+              69,
+              120,
+              77,
+              68,
+              81,
+              49,
+              78,
+              71,
+              70,
+              108,
+              77,
+              68,
+              99,
+              49,
+              73,
+              110,
+              48,
+              46,
+              56,
+              120,
+              55,
+              100,
+              67,
+              110,
+              56,
+              78,
+              95,
+              87,
+              103,
+              66,
+              57,
+              100,
+              108,
+              52,
+              86,
+              87,
+              122,
+              102,
+              83,
+              122,
+              108,
+              90,
+              112,
+              86,
+              73,
+              101,
+              57,
+              122,
+              74,
+              110,
+              108,
+              101,
+              116,
+              50,
+              116,
+              84,
+              119,
+              104,
+              67,
+              110,
+              52,
+              34,
+              44,
+              34,
+              100,
+              111,
+              97,
+              100,
+              111,
+              114,
+              34,
+              58,
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              49,
+              57,
+              53,
+              100,
+              101,
+              99,
+              100,
+              98,
+              45,
+              51,
+              54,
+              52,
+              55,
+              45,
+              52,
+              49,
+              102,
+              100,
+              45,
+              97,
+              102,
+              48,
+              48,
+              45,
+              56,
+              49,
+              49,
+              48,
+              52,
+              53,
+              52,
+              97,
+              101,
+              48,
+              55,
+              53,
+              34,
+              44,
+              34,
+              110,
+              111,
+              109,
+              101,
+              34,
+              58,
+              34,
+              68,
+              111,
+              97,
+              100,
+              111,
+              114,
+              32,
+              65,
+              34,
+              44,
+              34,
+              101,
+              109,
+              97,
+              105,
+              108,
+              34,
+              58,
+              34,
+              97,
+              46,
+              49,
+              55,
+              57,
+              50,
+              52,
+              50,
+              51,
+              56,
+              57,
+              54,
+              57,
+              57,
+              55,
+              64,
+              116,
+              101,
+              115,
+              116,
+              101,
+              46,
+              118,
+              105,
+              116,
+              116,
+              97,
+              34,
+              44,
+              34,
+              100,
+              97,
+              116,
+              97,
+              78,
+              97,
+              115,
+              99,
+              105,
+              109,
+              101,
+              110,
+              116,
+              111,
+              34,
+              58,
+              34,
+              49,
+              57,
+              57,
+              53,
+              45,
+              48,
+              51,
+              45,
+              49,
+              53,
+              34,
+              44,
+              34,
+              116,
+              101,
+              108,
+              101,
+              102,
+              111,
+              110,
+              101,
+              34,
+              58,
+              110,
+              117,
+              108,
+              108,
+              44,
+              34,
+              116,
+              105,
+              112,
+              111,
+              83,
+              97,
+              110,
+              103,
+              117,
+              105,
+              110,
+              101,
+              111,
+              34,
+              58,
+              110,
+              117,
+              108,
+              108,
+              125,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 401,
+          "responseSize": 378
+        },
+        "id": "f5d5f101-57df-43c6-af12-6e7dce7235e6",
+        "assertions": [
+          {
+            "assertion": "Cadastro de A: 201",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "e0f1c91e-a2c1-4626-a5e2-a3fca314ae3a",
+          "length": 17,
+          "cycles": 1,
+          "position": 1,
+          "iteration": 0,
+          "httpRequestId": "38f6aa92-9d83-4e15-9f04-6c13bccb620d"
+        },
+        "item": {
+          "id": "b7b13b85-f62e-46a6-9bff-69a5c59eb9af",
+          "name": "2. Cadastrar o doador B",
+          "request": {
+            "description": {
+              "content": "Cria a conta B e guarda o token e o id dela.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "auth",
+                "cadastro"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Doador B\",\n  \"email\": \"{{emailB}}\",\n  \"dataNascimento\": \"1990-07-20\",\n  \"senha\": \"Senha@2026\",\n  \"confirmarSenha\": \"Senha@2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "1c909ce3-74f1-41ac-b588-3cb903d0950d",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"emailB\", \"b.\" + Date.now() + \"@teste.vitta\");"
+                ],
+                "_lastExecutionId": "394e1abb-54f8-48df-97e7-a96792a6d0d4"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "b4324f26-11f0-4420-9289-02936e3052d4",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Cadastro de B: 201\", function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set(\"tokenB\", json.token);",
+                  "pm.collectionVariables.set(\"idB\", json.doador.id);"
+                ],
+                "_lastExecutionId": "ea5292c4-bef8-41e8-a1c4-c15e3d8d87d1"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Cria a conta B e guarda o token e o id dela.",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "auth",
+              "cadastro"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "6687f31b-7d38-487b-ac05-8dca0b26ebe9",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "159",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"nome\": \"Doador B\",\n  \"email\": \"b.1792423897478@teste.vitta\",\n  \"dataNascimento\": \"1990-07-20\",\n  \"senha\": \"Senha@2026\",\n  \"confirmarSenha\": \"Senha@2026\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "79a8d505-b8da-4444-82b1-09676c0f1bf5",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "378"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"17a-Gauk6j4TtPMenbcLG6opBwhczHA\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:37 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              116,
+              111,
+              107,
+              101,
+              110,
+              34,
+              58,
+              34,
+              101,
+              121,
+              74,
+              104,
+              98,
+              71,
+              99,
+              105,
+              79,
+              105,
+              74,
+              73,
+              85,
+              122,
+              73,
+              49,
+              78,
+              105,
+              73,
+              115,
+              73,
+              110,
+              82,
+              53,
+              99,
+              67,
+              73,
+              54,
+              73,
+              107,
+              112,
+              88,
+              86,
+              67,
+              74,
+              57,
+              46,
+              101,
+              121,
+              74,
+              112,
+              89,
+              88,
+              81,
+              105,
+              79,
+              106,
+              69,
+              51,
+              79,
+              84,
+              73,
+              48,
+              77,
+              106,
+              77,
+              52,
+              79,
+              84,
+              99,
+              115,
+              73,
+              109,
+              86,
+              52,
+              99,
+              67,
+              73,
+              54,
+              77,
+              84,
+              99,
+              53,
+              77,
+              122,
+              65,
+              121,
+              79,
+              68,
+              89,
+              53,
+              78,
+              121,
+              119,
+              105,
+              99,
+              51,
+              86,
+              105,
+              73,
+              106,
+              111,
+              105,
+              77,
+              50,
+              69,
+              119,
+              79,
+              68,
+              107,
+              120,
+              77,
+              109,
+              89,
+              116,
+              90,
+              71,
+              81,
+              122,
+              77,
+              105,
+              48,
+              48,
+              78,
+              68,
+              90,
+              109,
+              76,
+              84,
+              108,
+              105,
+              77,
+              68,
+              89,
+              116,
+              78,
+              71,
+              74,
+              106,
+              77,
+              122,
+              103,
+              48,
+              77,
+              71,
+              81,
+              120,
+              78,
+              68,
+              89,
+              121,
+              73,
+              110,
+              48,
+              46,
+              95,
+              102,
+              121,
+              50,
+              107,
+              67,
+              95,
+              109,
+              80,
+              83,
+              51,
+              81,
+              109,
+              100,
+              72,
+              104,
+              72,
+              72,
+              45,
+              67,
+              57,
+              102,
+              105,
+              70,
+              55,
+              66,
+              111,
+              102,
+              111,
+              81,
+              80,
+              79,
+              78,
+              115,
+              67,
+              52,
+              52,
+              56,
+              69,
+              98,
+              115,
+              54,
+              85,
+              34,
+              44,
+              34,
+              100,
+              111,
+              97,
+              100,
+              111,
+              114,
+              34,
+              58,
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              51,
+              97,
+              48,
+              56,
+              57,
+              49,
+              50,
+              102,
+              45,
+              100,
+              100,
+              51,
+              50,
+              45,
+              52,
+              52,
+              54,
+              102,
+              45,
+              57,
+              98,
+              48,
+              54,
+              45,
+              52,
+              98,
+              99,
+              51,
+              56,
+              52,
+              48,
+              100,
+              49,
+              52,
+              54,
+              50,
+              34,
+              44,
+              34,
+              110,
+              111,
+              109,
+              101,
+              34,
+              58,
+              34,
+              68,
+              111,
+              97,
+              100,
+              111,
+              114,
+              32,
+              66,
+              34,
+              44,
+              34,
+              101,
+              109,
+              97,
+              105,
+              108,
+              34,
+              58,
+              34,
+              98,
+              46,
+              49,
+              55,
+              57,
+              50,
+              52,
+              50,
+              51,
+              56,
+              57,
+              55,
+              52,
+              55,
+              56,
+              64,
+              116,
+              101,
+              115,
+              116,
+              101,
+              46,
+              118,
+              105,
+              116,
+              116,
+              97,
+              34,
+              44,
+              34,
+              100,
+              97,
+              116,
+              97,
+              78,
+              97,
+              115,
+              99,
+              105,
+              109,
+              101,
+              110,
+              116,
+              111,
+              34,
+              58,
+              34,
+              49,
+              57,
+              57,
+              48,
+              45,
+              48,
+              55,
+              45,
+              50,
+              48,
+              34,
+              44,
+              34,
+              116,
+              101,
+              108,
+              101,
+              102,
+              111,
+              110,
+              101,
+              34,
+              58,
+              110,
+              117,
+              108,
+              108,
+              44,
+              34,
+              116,
+              105,
+              112,
+              111,
+              83,
+              97,
+              110,
+              103,
+              117,
+              105,
+              110,
+              101,
+              111,
+              34,
+              58,
+              110,
+              117,
+              108,
+              108,
+              125,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 247,
+          "responseSize": 378
+        },
+        "id": "b7b13b85-f62e-46a6-9bff-69a5c59eb9af",
+        "assertions": [
+          {
+            "assertion": "Cadastro de B: 201",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "f05847be-89b5-471f-916a-04f7d3d3850d",
+          "length": 17,
+          "cycles": 1,
+          "position": 2,
+          "iteration": 0,
+          "httpRequestId": "ad5ab50c-59b7-420b-8a9c-35ece2c5d071"
+        },
+        "item": {
+          "id": "c4835f77-8f03-4431-a7d6-6aeada33d08d",
+          "name": "3. B informa telefone e tipo sanguíneo",
+          "request": {
+            "description": {
+              "content": "Dá a B dados que dá para notar se alguém mexer.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "me"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenB}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefone\": \"11988887777\",\n  \"tipoSanguineo\": \"O-\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "63c0bf5f-21d1-4fe0-837f-bccc6b2849fe",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"B salvou os dados: 200\", function () { pm.response.to.have.status(200); });"
+                ],
+                "_lastExecutionId": "04f3f82b-d136-448f-be61-9d9492180c63"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Dá a B dados que dá para notar se alguém mexer.",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "me"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "7d75dcb9-0971-45e5-9314-8dd403cc000e",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "56",
+              "system": true
+            }
+          ],
+          "method": "PATCH",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"telefone\": \"11988887777\",\n  \"tipoSanguineo\": \"O-\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "499afc1a-b751-4dc5-a2f7-a9a2acb5487a",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "188"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"bc-MhuaS8runrqZmvajH9QP0XSegjo\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:37 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              100,
+              111,
+              97,
+              100,
+              111,
+              114,
+              34,
+              58,
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              51,
+              97,
+              48,
+              56,
+              57,
+              49,
+              50,
+              102,
+              45,
+              100,
+              100,
+              51,
+              50,
+              45,
+              52,
+              52,
+              54,
+              102,
+              45,
+              57,
+              98,
+              48,
+              54,
+              45,
+              52,
+              98,
+              99,
+              51,
+              56,
+              52,
+              48,
+              100,
+              49,
+              52,
+              54,
+              50,
+              34,
+              44,
+              34,
+              110,
+              111,
+              109,
+              101,
+              34,
+              58,
+              34,
+              68,
+              111,
+              97,
+              100,
+              111,
+              114,
+              32,
+              66,
+              34,
+              44,
+              34,
+              101,
+              109,
+              97,
+              105,
+              108,
+              34,
+              58,
+              34,
+              98,
+              46,
+              49,
+              55,
+              57,
+              50,
+              52,
+              50,
+              51,
+              56,
+              57,
+              55,
+              52,
+              55,
+              56,
+              64,
+              116,
+              101,
+              115,
+              116,
+              101,
+              46,
+              118,
+              105,
+              116,
+              116,
+              97,
+              34,
+              44,
+              34,
+              100,
+              97,
+              116,
+              97,
+              78,
+              97,
+              115,
+              99,
+              105,
+              109,
+              101,
+              110,
+              116,
+              111,
+              34,
+              58,
+              34,
+              49,
+              57,
+              57,
+              48,
+              45,
+              48,
+              55,
+              45,
+              50,
+              48,
+              34,
+              44,
+              34,
+              116,
+              101,
+              108,
+              101,
+              102,
+              111,
+              110,
+              101,
+              34,
+              58,
+              34,
+              49,
+              49,
+              57,
+              56,
+              56,
+              56,
+              56,
+              55,
+              55,
+              55,
+              55,
+              34,
+              44,
+              34,
+              116,
+              105,
+              112,
+              111,
+              83,
+              97,
+              110,
+              103,
+              117,
+              105,
+              110,
+              101,
+              111,
+              34,
+              58,
+              34,
+              79,
+              45,
+              34,
+              125,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 14,
+          "responseSize": 188
+        },
+        "id": "c4835f77-8f03-4431-a7d6-6aeada33d08d",
+        "assertions": [
+          {
+            "assertion": "B salvou os dados: 200",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "9c844ca9-7606-4a44-a5f9-7bd5f6d8b9cc",
+          "length": 17,
+          "cycles": 1,
+          "position": 3,
+          "iteration": 0,
+          "httpRequestId": "0d9f2977-44fe-4139-90c3-78c76adc795c"
+        },
+        "item": {
+          "id": "e0896be1-087c-4e77-bc77-e8d84699d185",
+          "name": "4. B responde ao formulário de elegibilidade (POST /doadores/me/formulario)",
+          "request": {
+            "description": {
+              "content": "B responde ao formulário da HU-03 com 49 kg. Esperado: 201 e resultado INAPTO (por peso).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "me",
+                "formulario"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenB}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"respostas\": {\n    \"bemHoje\": true,\n    \"gripe\": false,\n    \"sinaisAlerta\": false,\n    \"peso\": 49,\n    \"sexo\": \"F\",\n    \"jaDoou\": false,\n    \"procedimentos\": {},\n    \"piercingBocaGenital\": \"nao\",\n    \"remedios\": {},\n    \"vacinas\": {},\n    \"cirurgias\": {},\n    \"dentista\": {},\n    \"transfusao\": false,\n    \"condicoes\": {},\n    \"ist\": false,\n    \"riscoSexual\": {},\n    \"drogas\": {},\n    \"malaria\": false,\n    \"gestacao\": {},\n    \"declaracao\": true\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "fcfd5970-8a37-4f9a-9049-b5be159498cc",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Formulário de B enviado: 201\", function () { pm.response.to.have.status(201); });",
+                  "const f = pm.response.json().formulario;",
+                  "pm.test(\"Resultado de B: INAPTO (peso abaixo de 50 kg)\", function () { pm.expect(f.resultado).to.eql(\"INAPTO\"); });",
+                  "pm.collectionVariables.set(\"preenchidoEmB\", f.preenchidoEm);"
+                ],
+                "_lastExecutionId": "d9ea7824-5fbe-4710-b4df-d875eb23d1ec"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "B responde ao formulário da HU-03 com 49 kg. Esperado: 201 e resultado INAPTO (por peso).",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "me",
+              "formulario"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "c57dca81-4954-4e7f-8fe7-c77ed1aebb98",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "455",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"respostas\": {\n    \"bemHoje\": true,\n    \"gripe\": false,\n    \"sinaisAlerta\": false,\n    \"peso\": 49,\n    \"sexo\": \"F\",\n    \"jaDoou\": false,\n    \"procedimentos\": {},\n    \"piercingBocaGenital\": \"nao\",\n    \"remedios\": {},\n    \"vacinas\": {},\n    \"cirurgias\": {},\n    \"dentista\": {},\n    \"transfusao\": false,\n    \"condicoes\": {},\n    \"ist\": false,\n    \"riscoSexual\": {},\n    \"drogas\": {},\n    \"malaria\": false,\n    \"gestacao\": {},\n    \"declaracao\": true\n  }\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "65160c58-92ca-4334-8e9e-5964936fdb1f",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "748"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"2ec-hCeYkiRZ+vKWuJ4mpZjj6sljUns\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:37 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              102,
+              111,
+              114,
+              109,
+              117,
+              108,
+              97,
+              114,
+              105,
+              111,
+              34,
+              58,
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              57,
+              57,
+              50,
+              97,
+              50,
+              56,
+              50,
+              54,
+              45,
+              49,
+              53,
+              56,
+              101,
+              45,
+              52,
+              54,
+              50,
+              51,
+              45,
+              97,
+              48,
+              56,
+              97,
+              45,
+              99,
+              100,
+              50,
+              102,
+              57,
+              48,
+              97,
+              98,
+              48,
+              56,
+              98,
+              51,
+              34,
+              44,
+              34,
+              112,
+              114,
+              101,
+              101,
+              110,
+              99,
+              104,
+              105,
+              100,
+              111,
+              69,
+              109,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              49,
+              57,
+              84,
+              49,
+              53,
+              58,
+              51,
+              49,
+              58,
+              51,
+              55,
+              46,
+              57,
+              53,
+              52,
+              90,
+              34,
+              44,
+              34,
+              118,
+              97,
+              108,
+              105,
+              100,
+              111,
+              65,
+              116,
+              101,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              49,
+              45,
+              49,
+              56,
+              34,
+              44,
+              34,
+              114,
+              101,
+              115,
+              117,
+              108,
+              116,
+              97,
+              100,
+              111,
+              34,
+              58,
+              34,
+              73,
+              78,
+              65,
+              80,
+              84,
+              79,
+              34,
+              44,
+              34,
+              108,
+              105,
+              98,
+              101,
+              114,
+              97,
+              100,
+              111,
+              69,
+              109,
+              34,
+              58,
+              110,
+              117,
+              108,
+              108,
+              44,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              80,
+              101,
+              108,
+              97,
+              115,
+              32,
+              115,
+              117,
+              97,
+              115,
+              32,
+              114,
+              101,
+              115,
+              112,
+              111,
+              115,
+              116,
+              97,
+              115,
+              44,
+              32,
+              97,
+              32,
+              100,
+              111,
+              97,
+              195,
+              167,
+              195,
+              163,
+              111,
+              32,
+              100,
+              101,
+              32,
+              115,
+              97,
+              110,
+              103,
+              117,
+              101,
+              32,
+              110,
+              195,
+              163,
+              111,
+              32,
+              195,
+              169,
+              32,
+              105,
+              110,
+              100,
+              105,
+              99,
+              97,
+              100,
+              97,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              118,
+              111,
+              99,
+              195,
+              170,
+              46,
+              32,
+              83,
+              101,
+              32,
+              116,
+              105,
+              118,
+              101,
+              114,
+              32,
+              100,
+              195,
+              186,
+              118,
+              105,
+              100,
+              97,
+              115,
+              44,
+              32,
+              99,
+              111,
+              110,
+              118,
+              101,
+              114,
+              115,
+              101,
+              32,
+              99,
+              111,
+              109,
+              32,
+              97,
+              32,
+              101,
+              113,
+              117,
+              105,
+              112,
+              101,
+              32,
+              100,
+              101,
+              32,
+              117,
+              109,
+              32,
+              104,
+              101,
+              109,
+              111,
+              99,
+              101,
+              110,
+              116,
+              114,
+              111,
+              46,
+              34,
+              44,
+              34,
+              109,
+              111,
+              116,
+              105,
+              118,
+              111,
+              115,
+              34,
+              58,
+              91,
+              123,
+              34,
+              97,
+              116,
+              101,
+              34,
+              58,
+              110,
+              117,
+              108,
+              108,
+              44,
+              34,
+              116,
+              105,
+              112,
+              111,
+              34,
+              58,
+              34,
+              73,
+              78,
+              65,
+              80,
+              84,
+              79,
+              34,
+              44,
+              34,
+              102,
+              111,
+              110,
+              116,
+              101,
+              34,
+              58,
+              34,
+              65,
+              114,
+              116,
+              46,
+              32,
+              52,
+              48,
+              34,
+              44,
+              34,
+              99,
+              111,
+              100,
+              105,
+              103,
+              111,
+              34,
+              58,
+              34,
+              112,
+              101,
+              115,
+              111,
+              46,
+              109,
+              105,
+              110,
+              105,
+              109,
+              111,
+              34,
+              44,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              86,
+              111,
+              99,
+              195,
+              170,
+              32,
+              112,
+              114,
+              101,
+              99,
+              105,
+              115,
+              97,
+              32,
+              116,
+              101,
+              114,
+              32,
+              112,
+              101,
+              108,
+              111,
+              32,
+              109,
+              101,
+              110,
+              111,
+              115,
+              32,
+              53,
+              48,
+              32,
+              107,
+              103,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              100,
+              111,
+              97,
+              114,
+              46,
+              32,
+              69,
+              109,
+              32,
+              99,
+              97,
+              115,
+              111,
+              115,
+              32,
+              101,
+              115,
+              112,
+              101,
+              99,
+              105,
+              97,
+              105,
+              115,
+              44,
+              32,
+              111,
+              32,
+              109,
+              195,
+              169,
+              100,
+              105,
+              99,
+              111,
+              32,
+              100,
+              111,
+              32,
+              104,
+              101,
+              109,
+              111,
+              99,
+              101,
+              110,
+              116,
+              114,
+              111,
+              32,
+              112,
+              111,
+              100,
+              101,
+              32,
+              97,
+              118,
+              97,
+              108,
+              105,
+              97,
+              114,
+              46,
+              34,
+              125,
+              93,
+              44,
+              34,
+              97,
+              118,
+              105,
+              115,
+              111,
+              115,
+              34,
+              58,
+              91,
+              93,
+              44,
+              34,
+              118,
+              101,
+              114,
+              115,
+              97,
+              111,
+              82,
+              101,
+              103,
+              114,
+              97,
+              115,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              48,
+              57,
+              45,
+              51,
+              48,
+              34,
+              44,
+              34,
+              118,
+              101,
+              110,
+              99,
+              105,
+              100,
+              111,
+              34,
+              58,
+              102,
+              97,
+              108,
+              115,
+              101,
+              44,
+              34,
+              97,
+              103,
+              101,
+              110,
+              100,
+              97,
+              109,
+              101,
+              110,
+              116,
+              111,
+              76,
+              105,
+              98,
+              101,
+              114,
+              97,
+              100,
+              111,
+              34,
+              58,
+              102,
+              97,
+              108,
+              115,
+              101,
+              44,
+              34,
+              98,
+              108,
+              111,
+              113,
+              117,
+              101,
+              105,
+              111,
+              65,
+              103,
+              101,
+              110,
+              100,
+              97,
+              109,
+              101,
+              110,
+              116,
+              111,
+              34,
+              58,
+              34,
+              80,
+              101,
+              108,
+              97,
+              115,
+              32,
+              115,
+              117,
+              97,
+              115,
+              32,
+              114,
+              101,
+              115,
+              112,
+              111,
+              115,
+              116,
+              97,
+              115,
+              44,
+              32,
+              97,
+              32,
+              100,
+              111,
+              97,
+              195,
+              167,
+              195,
+              163,
+              111,
+              32,
+              100,
+              101,
+              32,
+              115,
+              97,
+              110,
+              103,
+              117,
+              101,
+              32,
+              110,
+              195,
+              163,
+              111,
+              32,
+              195,
+              169,
+              32,
+              105,
+              110,
+              100,
+              105,
+              99,
+              97,
+              100,
+              97,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              118,
+              111,
+              99,
+              195,
+              170,
+              46,
+              32,
+              83,
+              101,
+              32,
+              116,
+              105,
+              118,
+              101,
+              114,
+              32,
+              100,
+              195,
+              186,
+              118,
+              105,
+              100,
+              97,
+              115,
+              44,
+              32,
+              99,
+              111,
+              110,
+              118,
+              101,
+              114,
+              115,
+              101,
+              32,
+              99,
+              111,
+              109,
+              32,
+              97,
+              32,
+              101,
+              113,
+              117,
+              105,
+              112,
+              101,
+              32,
+              100,
+              101,
+              32,
+              117,
+              109,
+              32,
+              104,
+              101,
+              109,
+              111,
+              99,
+              101,
+              110,
+              116,
+              114,
+              111,
+              46,
+              34,
+              125,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 30,
+          "responseSize": 748
+        },
+        "id": "e0896be1-087c-4e77-bc77-e8d84699d185",
+        "assertions": [
+          {
+            "assertion": "Formulário de B enviado: 201",
+            "skipped": false
+          },
+          {
+            "assertion": "Resultado de B: INAPTO (peso abaixo de 50 kg)",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "30126bed-275d-4fbd-975b-9313bf0476fe",
+          "length": 17,
+          "cycles": 1,
+          "position": 4,
+          "iteration": 0,
+          "httpRequestId": "86a45875-d546-42ae-b4f0-8295b89a324f"
+        },
+        "item": {
+          "id": "828e9dc7-dcfd-4424-99c7-71cf9b7de6bb",
+          "name": "5. A vê o próprio perfil (GET /doadores/me)",
+          "request": {
+            "description": {
+              "content": "Controle: com o próprio token, A acessa os próprios dados.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "me"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "621f2ad1-7ed9-4885-a08a-acef332b43f2",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"A vê o próprio perfil: 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"É mesmo o perfil de A\", function () { pm.expect(pm.response.json().doador.id).to.eql(pm.collectionVariables.get(\"idA\")); });"
+                ],
+                "_lastExecutionId": "77c73c25-1460-48ab-b84e-414fa93cd25b"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Controle: com o próprio token, A acessa os próprios dados.",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "me"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "297e5f10-4a2f-4a7c-b4fb-47a4c8f84f31",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "3eed480b-48d9-4deb-9386-d620646714ba",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "179"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"b3-EckZjTs/DK9meo19m3GEX3DjSss\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:38 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              100,
+              111,
+              97,
+              100,
+              111,
+              114,
+              34,
+              58,
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              49,
+              57,
+              53,
+              100,
+              101,
+              99,
+              100,
+              98,
+              45,
+              51,
+              54,
+              52,
+              55,
+              45,
+              52,
+              49,
+              102,
+              100,
+              45,
+              97,
+              102,
+              48,
+              48,
+              45,
+              56,
+              49,
+              49,
+              48,
+              52,
+              53,
+              52,
+              97,
+              101,
+              48,
+              55,
+              53,
+              34,
+              44,
+              34,
+              110,
+              111,
+              109,
+              101,
+              34,
+              58,
+              34,
+              68,
+              111,
+              97,
+              100,
+              111,
+              114,
+              32,
+              65,
+              34,
+              44,
+              34,
+              101,
+              109,
+              97,
+              105,
+              108,
+              34,
+              58,
+              34,
+              97,
+              46,
+              49,
+              55,
+              57,
+              50,
+              52,
+              50,
+              51,
+              56,
+              57,
+              54,
+              57,
+              57,
+              55,
+              64,
+              116,
+              101,
+              115,
+              116,
+              101,
+              46,
+              118,
+              105,
+              116,
+              116,
+              97,
+              34,
+              44,
+              34,
+              100,
+              97,
+              116,
+              97,
+              78,
+              97,
+              115,
+              99,
+              105,
+              109,
+              101,
+              110,
+              116,
+              111,
+              34,
+              58,
+              34,
+              49,
+              57,
+              57,
+              53,
+              45,
+              48,
+              51,
+              45,
+              49,
+              53,
+              34,
+              44,
+              34,
+              116,
+              101,
+              108,
+              101,
+              102,
+              111,
+              110,
+              101,
+              34,
+              58,
+              110,
+              117,
+              108,
+              108,
+              44,
+              34,
+              116,
+              105,
+              112,
+              111,
+              83,
+              97,
+              110,
+              103,
+              117,
+              105,
+              110,
+              101,
+              111,
+              34,
+              58,
+              110,
+              117,
+              108,
+              108,
+              125,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 8,
+          "responseSize": 179
+        },
+        "id": "828e9dc7-dcfd-4424-99c7-71cf9b7de6bb",
+        "assertions": [
+          {
+            "assertion": "A vê o próprio perfil: 200",
+            "skipped": false
+          },
+          {
+            "assertion": "É mesmo o perfil de A",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "2a3ffb62-2eb6-4a84-9fde-e33687bac71c",
+          "length": 17,
+          "cycles": 1,
+          "position": 5,
+          "iteration": 0,
+          "httpRequestId": "69883f63-ae5b-427e-8bac-c04bba400a53"
+        },
+        "item": {
+          "id": "92e31c0f-004c-41f4-a44e-18a75a8d803c",
+          "name": "6. A tenta VER o perfil de B (GET /doadores/{idB})",
+          "request": {
+            "description": {
+              "content": "Com o token de A, usa o id de B no caminho. Esperado: 403 (ou 404).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "{{idB}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "46d22f47-6218-4c35-979f-c791db89600d",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"A tentativa de ver o perfil de B é recusada (403 ou 404)\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                  "});",
+                  "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                  "  const texto = pm.response.text();",
+                  "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                  "  pm.expect(texto).to.not.include(\"Doador B\");",
+                  "  pm.expect(texto).to.not.include(\"11988887777\");",
+                  "});"
+                ],
+                "_lastExecutionId": "52aeeb18-85ef-454b-b62e-37541c1db86e"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Com o token de A, usa o id de B no caminho. Esperado: 403 (ou 404).",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "3a08912f-dd32-446f-9b06-4bc3840d1462"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "41ee8759-6721-4d83-b7bf-f024c33bcbd8",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "a8430dd4-9e50-4cc4-9dcc-76e94d6eeaab",
+          "status": "Forbidden",
+          "code": 403,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "79"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"4f-OQm5aO7fRQbYJRn9fyDgkl8OIIQ\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:38 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              86,
+              111,
+              99,
+              195,
+              170,
+              32,
+              110,
+              195,
+              163,
+              111,
+              32,
+              116,
+              101,
+              109,
+              32,
+              112,
+              101,
+              114,
+              109,
+              105,
+              115,
+              115,
+              195,
+              163,
+              111,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              97,
+              99,
+              101,
+              115,
+              115,
+              97,
+              114,
+              32,
+              111,
+              115,
+              32,
+              100,
+              97,
+              100,
+              111,
+              115,
+              32,
+              100,
+              101,
+              32,
+              111,
+              117,
+              116,
+              114,
+              111,
+              32,
+              100,
+              111,
+              97,
+              100,
+              111,
+              114,
+              46,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 5,
+          "responseSize": 79
+        },
+        "id": "92e31c0f-004c-41f4-a44e-18a75a8d803c",
+        "assertions": [
+          {
+            "assertion": "A tentativa de ver o perfil de B é recusada (403 ou 404)",
+            "skipped": false
+          },
+          {
+            "assertion": "A resposta não mostra nenhum dado de B",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "d73f4771-4da5-4571-ab2f-9a07bc4ee350",
+          "length": 17,
+          "cycles": 1,
+          "position": 6,
+          "iteration": 0,
+          "httpRequestId": "6dd1eb5d-c345-41f6-ad73-0ec4d1050b77"
+        },
+        "item": {
+          "id": "58aeaadd-d34e-4127-9128-fcef8ab530a6",
+          "name": "7. A tenta ALTERAR o perfil de B (PATCH /doadores/{idB})",
+          "request": {
+            "description": {
+              "content": "Com o token de A, tenta mudar o telefone e o tipo sanguíneo de B. Esperado: 403 (ou 404).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "{{idB}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefone\": \"61999990000\",\n  \"tipoSanguineo\": \"A+\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "0f6b9f39-60e0-4693-a77c-857c4a2ae385",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"A tentativa de alterar o perfil de B é recusada (403 ou 404)\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                  "});",
+                  "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                  "  const texto = pm.response.text();",
+                  "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                  "  pm.expect(texto).to.not.include(\"Doador B\");",
+                  "  pm.expect(texto).to.not.include(\"11988887777\");",
+                  "});"
+                ],
+                "_lastExecutionId": "8c5f58d9-e8a5-493c-b8bf-21a8a14cebe1"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Com o token de A, tenta mudar o telefone e o tipo sanguíneo de B. Esperado: 403 (ou 404).",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "3a08912f-dd32-446f-9b06-4bc3840d1462"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "2da99071-aa09-415a-a779-028d07315085",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "56",
+              "system": true
+            }
+          ],
+          "method": "PATCH",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"telefone\": \"61999990000\",\n  \"tipoSanguineo\": \"A+\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "978fc904-626b-4437-a8fb-641127828283",
+          "status": "Forbidden",
+          "code": 403,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "79"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"4f-OQm5aO7fRQbYJRn9fyDgkl8OIIQ\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:38 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              86,
+              111,
+              99,
+              195,
+              170,
+              32,
+              110,
+              195,
+              163,
+              111,
+              32,
+              116,
+              101,
+              109,
+              32,
+              112,
+              101,
+              114,
+              109,
+              105,
+              115,
+              115,
+              195,
+              163,
+              111,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              97,
+              99,
+              101,
+              115,
+              115,
+              97,
+              114,
+              32,
+              111,
+              115,
+              32,
+              100,
+              97,
+              100,
+              111,
+              115,
+              32,
+              100,
+              101,
+              32,
+              111,
+              117,
+              116,
+              114,
+              111,
+              32,
+              100,
+              111,
+              97,
+              100,
+              111,
+              114,
+              46,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 5,
+          "responseSize": 79
+        },
+        "id": "58aeaadd-d34e-4127-9128-fcef8ab530a6",
+        "assertions": [
+          {
+            "assertion": "A tentativa de alterar o perfil de B é recusada (403 ou 404)",
+            "skipped": false
+          },
+          {
+            "assertion": "A resposta não mostra nenhum dado de B",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "3df1faf9-a4ac-488f-bc5b-1d70d7f27108",
+          "length": 17,
+          "cycles": 1,
+          "position": 7,
+          "iteration": 0,
+          "httpRequestId": "20d818f1-275e-4b9c-93fa-5fd77ae3ddda"
+        },
+        "item": {
+          "id": "fbb52eea-d5ff-49e9-b767-21e8abf38180",
+          "name": "8. A tenta EXCLUIR a conta de B (DELETE /doadores/{idB})",
+          "request": {
+            "description": {
+              "content": "Com o token de A, tenta apagar a conta de B. Esperado: 403 (ou 404).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "{{idB}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "method": "DELETE"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "6f97bd2b-7293-40c7-8559-4a1aa11c9af0",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"A tentativa de excluir a conta de B é recusada (403 ou 404)\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                  "});",
+                  "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                  "  const texto = pm.response.text();",
+                  "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                  "  pm.expect(texto).to.not.include(\"Doador B\");",
+                  "  pm.expect(texto).to.not.include(\"11988887777\");",
+                  "});"
+                ],
+                "_lastExecutionId": "682bccb9-e5ea-4301-9c69-e2a762d5de15"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Com o token de A, tenta apagar a conta de B. Esperado: 403 (ou 404).",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "3a08912f-dd32-446f-9b06-4bc3840d1462"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "65f8a429-04d9-4962-8e5a-51b023934da0",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "DELETE"
+        },
+        "response": {
+          "id": "d8f08a6e-83e9-4380-9742-8a9d884f1f99",
+          "status": "Forbidden",
+          "code": 403,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "79"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"4f-OQm5aO7fRQbYJRn9fyDgkl8OIIQ\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:38 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              86,
+              111,
+              99,
+              195,
+              170,
+              32,
+              110,
+              195,
+              163,
+              111,
+              32,
+              116,
+              101,
+              109,
+              32,
+              112,
+              101,
+              114,
+              109,
+              105,
+              115,
+              115,
+              195,
+              163,
+              111,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              97,
+              99,
+              101,
+              115,
+              115,
+              97,
+              114,
+              32,
+              111,
+              115,
+              32,
+              100,
+              97,
+              100,
+              111,
+              115,
+              32,
+              100,
+              101,
+              32,
+              111,
+              117,
+              116,
+              114,
+              111,
+              32,
+              100,
+              111,
+              97,
+              100,
+              111,
+              114,
+              46,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 4,
+          "responseSize": 79
+        },
+        "id": "fbb52eea-d5ff-49e9-b767-21e8abf38180",
+        "assertions": [
+          {
+            "assertion": "A tentativa de excluir a conta de B é recusada (403 ou 404)",
+            "skipped": false
+          },
+          {
+            "assertion": "A resposta não mostra nenhum dado de B",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "638db891-602c-48ae-8c12-a245a1595ae6",
+          "length": 17,
+          "cycles": 1,
+          "position": 8,
+          "iteration": 0,
+          "httpRequestId": "c3ac92fe-830b-4305-8087-e03666b57e7d"
+        },
+        "item": {
+          "id": "7be0df37-2703-4ea9-a358-e28a93daf9ec",
+          "name": "9. A tenta VER o FORMULÁRIO de B (GET /doadores/{idB}/formulario)",
+          "request": {
+            "description": {
+              "content": "Com o token de A, tenta ler o formulário de elegibilidade de B (HU-03). Esperado: 403 (ou 404), sem o resultado de B.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "{{idB}}",
+                "formulario"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "c7ccce47-140c-4a8e-8ae5-423cbc116119",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"A tentativa de ver o formulário de B é recusada (403 ou 404)\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                  "});",
+                  "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                  "  const texto = pm.response.text();",
+                  "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                  "  pm.expect(texto).to.not.include(\"Doador B\");",
+                  "  pm.expect(texto).to.not.include(\"11988887777\");",
+                  "  pm.expect(texto).to.not.include(\"INAPTO\");",
+                  "  pm.expect(texto).to.not.include(\"peso\");",
+                  "});"
+                ],
+                "_lastExecutionId": "6848d7a0-ab53-4d0c-bec4-ebf43a51f950"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Com o token de A, tenta ler o formulário de elegibilidade de B (HU-03). Esperado: 403 (ou 404), sem o resultado de B.",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "3a08912f-dd32-446f-9b06-4bc3840d1462",
+              "formulario"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "8a5f9cfb-7803-4b76-9009-04193a6a9785",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "f02a7775-19db-42b7-bd2c-c553f949f3cc",
+          "status": "Forbidden",
+          "code": 403,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "79"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"4f-OQm5aO7fRQbYJRn9fyDgkl8OIIQ\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:38 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              86,
+              111,
+              99,
+              195,
+              170,
+              32,
+              110,
+              195,
+              163,
+              111,
+              32,
+              116,
+              101,
+              109,
+              32,
+              112,
+              101,
+              114,
+              109,
+              105,
+              115,
+              115,
+              195,
+              163,
+              111,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              97,
+              99,
+              101,
+              115,
+              115,
+              97,
+              114,
+              32,
+              111,
+              115,
+              32,
+              100,
+              97,
+              100,
+              111,
+              115,
+              32,
+              100,
+              101,
+              32,
+              111,
+              117,
+              116,
+              114,
+              111,
+              32,
+              100,
+              111,
+              97,
+              100,
+              111,
+              114,
+              46,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 6,
+          "responseSize": 79
+        },
+        "id": "7be0df37-2703-4ea9-a358-e28a93daf9ec",
+        "assertions": [
+          {
+            "assertion": "A tentativa de ver o formulário de B é recusada (403 ou 404)",
+            "skipped": false
+          },
+          {
+            "assertion": "A resposta não mostra nenhum dado de B",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "96818577-d07b-4da9-b36a-e630552ed1c3",
+          "length": 17,
+          "cycles": 1,
+          "position": 9,
+          "iteration": 0,
+          "httpRequestId": "257e1c60-21bf-4cc3-b31f-8623dc3edbad"
+        },
+        "item": {
+          "id": "a18e0bc1-66d6-44e2-95e3-5a2e61016a94",
+          "name": "10. A tenta RESPONDER o formulário no lugar de B (POST /doadores/{idB}/formulario)",
+          "request": {
+            "description": {
+              "content": "Com o token de A, tenta enviar respostas como se fosse B. Esperado: 403 (ou 404), e o formulário de B não muda.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "{{idB}}",
+                "formulario"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"respostas\": {\n    \"bemHoje\": true,\n    \"gripe\": false,\n    \"sinaisAlerta\": false,\n    \"peso\": 80,\n    \"sexo\": \"F\",\n    \"jaDoou\": false,\n    \"procedimentos\": {},\n    \"piercingBocaGenital\": \"nao\",\n    \"remedios\": {},\n    \"vacinas\": {},\n    \"cirurgias\": {},\n    \"dentista\": {},\n    \"transfusao\": false,\n    \"condicoes\": {},\n    \"ist\": false,\n    \"riscoSexual\": {},\n    \"drogas\": {},\n    \"malaria\": false,\n    \"gestacao\": {},\n    \"declaracao\": true\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b14c0b31-862f-4aa8-97d3-017cfc59353f",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"A tentativa de responder o formulário no lugar de B é recusada (403 ou 404)\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                  "});",
+                  "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                  "  const texto = pm.response.text();",
+                  "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                  "  pm.expect(texto).to.not.include(\"Doador B\");",
+                  "  pm.expect(texto).to.not.include(\"11988887777\");",
+                  "});"
+                ],
+                "_lastExecutionId": "903eff8b-46f7-4471-9d56-93bd94aea327"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Com o token de A, tenta enviar respostas como se fosse B. Esperado: 403 (ou 404), e o formulário de B não muda.",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "3a08912f-dd32-446f-9b06-4bc3840d1462",
+              "formulario"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "636b61c0-a118-4c85-9f99-871d725503cb",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "455",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"respostas\": {\n    \"bemHoje\": true,\n    \"gripe\": false,\n    \"sinaisAlerta\": false,\n    \"peso\": 80,\n    \"sexo\": \"F\",\n    \"jaDoou\": false,\n    \"procedimentos\": {},\n    \"piercingBocaGenital\": \"nao\",\n    \"remedios\": {},\n    \"vacinas\": {},\n    \"cirurgias\": {},\n    \"dentista\": {},\n    \"transfusao\": false,\n    \"condicoes\": {},\n    \"ist\": false,\n    \"riscoSexual\": {},\n    \"drogas\": {},\n    \"malaria\": false,\n    \"gestacao\": {},\n    \"declaracao\": true\n  }\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "70361578-d040-49a8-bb41-93e4ac5a2f1e",
+          "status": "Forbidden",
+          "code": 403,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "79"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"4f-OQm5aO7fRQbYJRn9fyDgkl8OIIQ\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:38 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              86,
+              111,
+              99,
+              195,
+              170,
+              32,
+              110,
+              195,
+              163,
+              111,
+              32,
+              116,
+              101,
+              109,
+              32,
+              112,
+              101,
+              114,
+              109,
+              105,
+              115,
+              115,
+              195,
+              163,
+              111,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              97,
+              99,
+              101,
+              115,
+              115,
+              97,
+              114,
+              32,
+              111,
+              115,
+              32,
+              100,
+              97,
+              100,
+              111,
+              115,
+              32,
+              100,
+              101,
+              32,
+              111,
+              117,
+              116,
+              114,
+              111,
+              32,
+              100,
+              111,
+              97,
+              100,
+              111,
+              114,
+              46,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 5,
+          "responseSize": 79
+        },
+        "id": "a18e0bc1-66d6-44e2-95e3-5a2e61016a94",
+        "assertions": [
+          {
+            "assertion": "A tentativa de responder o formulário no lugar de B é recusada (403 ou 404)",
+            "skipped": false
+          },
+          {
+            "assertion": "A resposta não mostra nenhum dado de B",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "d0874058-af53-4f4a-bb7b-02e6fadd2e04",
+          "length": 17,
+          "cycles": 1,
+          "position": 10,
+          "iteration": 0,
+          "httpRequestId": "9048f0ef-d64c-4206-adbf-2c012f806e89"
+        },
+        "item": {
+          "id": "14e60fad-7083-4a57-81cf-71f3c18892e7",
+          "name": "11. A tenta baixar as perguntas pelo caminho de B (GET /doadores/{idB}/formulario/modelo)",
+          "request": {
+            "description": {
+              "content": "Qualquer caminho /doadores/{id}/... com o id de outro doador é recusado. Esperado: 403 (ou 404).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "{{idB}}",
+                "formulario",
+                "modelo"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "0c897f12-3da0-435f-ae9c-0ebfed121da6",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"A tentativa de usar o caminho do formulário de B é recusada (403 ou 404)\", function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                  "});",
+                  "pm.test(\"A resposta não mostra nenhum dado de B\", function () {",
+                  "  const texto = pm.response.text();",
+                  "  pm.expect(texto).to.not.include(pm.collectionVariables.get(\"emailB\"));",
+                  "  pm.expect(texto).to.not.include(\"Doador B\");",
+                  "  pm.expect(texto).to.not.include(\"11988887777\");",
+                  "});"
+                ],
+                "_lastExecutionId": "2c295b31-cfc9-4968-8490-ea4689c824b5"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Qualquer caminho /doadores/{id}/... com o id de outro doador é recusado. Esperado: 403 (ou 404).",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "3a08912f-dd32-446f-9b06-4bc3840d1462",
+              "formulario",
+              "modelo"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "70b8974a-461e-4b4c-b237-9ba09e2d6f6b",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "25ee093e-4583-4c8e-b969-f4882705ef61",
+          "status": "Forbidden",
+          "code": 403,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "79"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"4f-OQm5aO7fRQbYJRn9fyDgkl8OIIQ\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:38 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              86,
+              111,
+              99,
+              195,
+              170,
+              32,
+              110,
+              195,
+              163,
+              111,
+              32,
+              116,
+              101,
+              109,
+              32,
+              112,
+              101,
+              114,
+              109,
+              105,
+              115,
+              115,
+              195,
+              163,
+              111,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              97,
+              99,
+              101,
+              115,
+              115,
+              97,
+              114,
+              32,
+              111,
+              115,
+              32,
+              100,
+              97,
+              100,
+              111,
+              115,
+              32,
+              100,
+              101,
+              32,
+              111,
+              117,
+              116,
+              114,
+              111,
+              32,
+              100,
+              111,
+              97,
+              100,
+              111,
+              114,
+              46,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 4,
+          "responseSize": 79
+        },
+        "id": "14e60fad-7083-4a57-81cf-71f3c18892e7",
+        "assertions": [
+          {
+            "assertion": "A tentativa de usar o caminho do formulário de B é recusada (403 ou 404)",
+            "skipped": false
+          },
+          {
+            "assertion": "A resposta não mostra nenhum dado de B",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "4f6cd925-2f10-4160-bb1b-1d31f0dd0fbd",
+          "length": 17,
+          "cycles": 1,
+          "position": 11,
+          "iteration": 0,
+          "httpRequestId": "63cf2b27-9ed2-4e9d-86ec-b3260e72b410"
+        },
+        "item": {
+          "id": "c6156e23-18d2-49ab-9451-05378d437f17",
+          "name": "12. B continua com os mesmos dados (GET /doadores/me com o token de B)",
+          "request": {
+            "description": {
+              "content": "Depois de todas as tentativas de A, a conta de B existe e nada mudou.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "me"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenB}}"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "25380934-a064-4f37-af3f-f2d4e9a4f07b",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"B ainda existe: 200\", function () { pm.response.to.have.status(200); });",
+                  "const b = pm.response.json().doador;",
+                  "pm.test(\"Os dados de B estão intactos\", function () {",
+                  "  pm.expect(b.id).to.eql(pm.collectionVariables.get(\"idB\"));",
+                  "  pm.expect(b.nome).to.eql(\"Doador B\");",
+                  "  pm.expect(b.telefone).to.eql(\"11988887777\");",
+                  "  pm.expect(b.tipoSanguineo).to.eql(\"O-\");",
+                  "});"
+                ],
+                "_lastExecutionId": "c999b249-293a-4fb2-a33f-b53ef2a691f8"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Depois de todas as tentativas de A, a conta de B existe e nada mudou.",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "me"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "fdc49428-1b2c-431f-8d25-da02bcd30389",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "ac177c37-be3e-4aa6-acdd-7da08e1eabc3",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "188"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"bc-MhuaS8runrqZmvajH9QP0XSegjo\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:38 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              100,
+              111,
+              97,
+              100,
+              111,
+              114,
+              34,
+              58,
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              51,
+              97,
+              48,
+              56,
+              57,
+              49,
+              50,
+              102,
+              45,
+              100,
+              100,
+              51,
+              50,
+              45,
+              52,
+              52,
+              54,
+              102,
+              45,
+              57,
+              98,
+              48,
+              54,
+              45,
+              52,
+              98,
+              99,
+              51,
+              56,
+              52,
+              48,
+              100,
+              49,
+              52,
+              54,
+              50,
+              34,
+              44,
+              34,
+              110,
+              111,
+              109,
+              101,
+              34,
+              58,
+              34,
+              68,
+              111,
+              97,
+              100,
+              111,
+              114,
+              32,
+              66,
+              34,
+              44,
+              34,
+              101,
+              109,
+              97,
+              105,
+              108,
+              34,
+              58,
+              34,
+              98,
+              46,
+              49,
+              55,
+              57,
+              50,
+              52,
+              50,
+              51,
+              56,
+              57,
+              55,
+              52,
+              55,
+              56,
+              64,
+              116,
+              101,
+              115,
+              116,
+              101,
+              46,
+              118,
+              105,
+              116,
+              116,
+              97,
+              34,
+              44,
+              34,
+              100,
+              97,
+              116,
+              97,
+              78,
+              97,
+              115,
+              99,
+              105,
+              109,
+              101,
+              110,
+              116,
+              111,
+              34,
+              58,
+              34,
+              49,
+              57,
+              57,
+              48,
+              45,
+              48,
+              55,
+              45,
+              50,
+              48,
+              34,
+              44,
+              34,
+              116,
+              101,
+              108,
+              101,
+              102,
+              111,
+              110,
+              101,
+              34,
+              58,
+              34,
+              49,
+              49,
+              57,
+              56,
+              56,
+              56,
+              56,
+              55,
+              55,
+              55,
+              55,
+              34,
+              44,
+              34,
+              116,
+              105,
+              112,
+              111,
+              83,
+              97,
+              110,
+              103,
+              117,
+              105,
+              110,
+              101,
+              111,
+              34,
+              58,
+              34,
+              79,
+              45,
+              34,
+              125,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 5,
+          "responseSize": 188
+        },
+        "id": "c6156e23-18d2-49ab-9451-05378d437f17",
+        "assertions": [
+          {
+            "assertion": "B ainda existe: 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Os dados de B estão intactos",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "8ca5af88-2017-43f5-868c-7d6075fbce03",
+          "length": 17,
+          "cycles": 1,
+          "position": 12,
+          "iteration": 0,
+          "httpRequestId": "b6557d6b-14ea-4a52-9966-ba1c806f6b23"
+        },
+        "item": {
+          "id": "1e7b59de-18dc-4880-91f9-4f99228a2ea2",
+          "name": "13. B continua com o mesmo formulário (GET /doadores/me/formulario com o token de B)",
+          "request": {
+            "description": {
+              "content": "O envio feito por A no passo 10 não pode ter mudado o formulário de B: continua INAPTO, com a mesma data de preenchimento.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "me",
+                "formulario"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenB}}"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "bee8c132-0397-475d-92c4-1c8695c92fbc",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Formulário de B existe: 200\", function () { pm.response.to.have.status(200); });",
+                  "const f = pm.response.json().formulario;",
+                  "pm.test(\"O formulário de B está intacto\", function () {",
+                  "  pm.expect(f.resultado).to.eql(\"INAPTO\");",
+                  "  pm.expect(f.preenchidoEm).to.eql(pm.collectionVariables.get(\"preenchidoEmB\"));",
+                  "});"
+                ],
+                "_lastExecutionId": "3d00664c-cad5-41d8-9867-0076f1519a0f"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "O envio feito por A no passo 10 não pode ter mudado o formulário de B: continua INAPTO, com a mesma data de preenchimento.",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "me",
+              "formulario"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "65fc16b0-73df-47d0-aa2b-6e4a8b1b43c2",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "8667c810-c3cc-4703-b4fe-31b1d077d517",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "748"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"2ec-hCeYkiRZ+vKWuJ4mpZjj6sljUns\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:38 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              102,
+              111,
+              114,
+              109,
+              117,
+              108,
+              97,
+              114,
+              105,
+              111,
+              34,
+              58,
+              123,
+              34,
+              105,
+              100,
+              34,
+              58,
+              34,
+              57,
+              57,
+              50,
+              97,
+              50,
+              56,
+              50,
+              54,
+              45,
+              49,
+              53,
+              56,
+              101,
+              45,
+              52,
+              54,
+              50,
+              51,
+              45,
+              97,
+              48,
+              56,
+              97,
+              45,
+              99,
+              100,
+              50,
+              102,
+              57,
+              48,
+              97,
+              98,
+              48,
+              56,
+              98,
+              51,
+              34,
+              44,
+              34,
+              112,
+              114,
+              101,
+              101,
+              110,
+              99,
+              104,
+              105,
+              100,
+              111,
+              69,
+              109,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              49,
+              57,
+              84,
+              49,
+              53,
+              58,
+              51,
+              49,
+              58,
+              51,
+              55,
+              46,
+              57,
+              53,
+              52,
+              90,
+              34,
+              44,
+              34,
+              118,
+              97,
+              108,
+              105,
+              100,
+              111,
+              65,
+              116,
+              101,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              49,
+              45,
+              49,
+              56,
+              34,
+              44,
+              34,
+              114,
+              101,
+              115,
+              117,
+              108,
+              116,
+              97,
+              100,
+              111,
+              34,
+              58,
+              34,
+              73,
+              78,
+              65,
+              80,
+              84,
+              79,
+              34,
+              44,
+              34,
+              108,
+              105,
+              98,
+              101,
+              114,
+              97,
+              100,
+              111,
+              69,
+              109,
+              34,
+              58,
+              110,
+              117,
+              108,
+              108,
+              44,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              80,
+              101,
+              108,
+              97,
+              115,
+              32,
+              115,
+              117,
+              97,
+              115,
+              32,
+              114,
+              101,
+              115,
+              112,
+              111,
+              115,
+              116,
+              97,
+              115,
+              44,
+              32,
+              97,
+              32,
+              100,
+              111,
+              97,
+              195,
+              167,
+              195,
+              163,
+              111,
+              32,
+              100,
+              101,
+              32,
+              115,
+              97,
+              110,
+              103,
+              117,
+              101,
+              32,
+              110,
+              195,
+              163,
+              111,
+              32,
+              195,
+              169,
+              32,
+              105,
+              110,
+              100,
+              105,
+              99,
+              97,
+              100,
+              97,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              118,
+              111,
+              99,
+              195,
+              170,
+              46,
+              32,
+              83,
+              101,
+              32,
+              116,
+              105,
+              118,
+              101,
+              114,
+              32,
+              100,
+              195,
+              186,
+              118,
+              105,
+              100,
+              97,
+              115,
+              44,
+              32,
+              99,
+              111,
+              110,
+              118,
+              101,
+              114,
+              115,
+              101,
+              32,
+              99,
+              111,
+              109,
+              32,
+              97,
+              32,
+              101,
+              113,
+              117,
+              105,
+              112,
+              101,
+              32,
+              100,
+              101,
+              32,
+              117,
+              109,
+              32,
+              104,
+              101,
+              109,
+              111,
+              99,
+              101,
+              110,
+              116,
+              114,
+              111,
+              46,
+              34,
+              44,
+              34,
+              109,
+              111,
+              116,
+              105,
+              118,
+              111,
+              115,
+              34,
+              58,
+              91,
+              123,
+              34,
+              97,
+              116,
+              101,
+              34,
+              58,
+              110,
+              117,
+              108,
+              108,
+              44,
+              34,
+              116,
+              105,
+              112,
+              111,
+              34,
+              58,
+              34,
+              73,
+              78,
+              65,
+              80,
+              84,
+              79,
+              34,
+              44,
+              34,
+              102,
+              111,
+              110,
+              116,
+              101,
+              34,
+              58,
+              34,
+              65,
+              114,
+              116,
+              46,
+              32,
+              52,
+              48,
+              34,
+              44,
+              34,
+              99,
+              111,
+              100,
+              105,
+              103,
+              111,
+              34,
+              58,
+              34,
+              112,
+              101,
+              115,
+              111,
+              46,
+              109,
+              105,
+              110,
+              105,
+              109,
+              111,
+              34,
+              44,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              86,
+              111,
+              99,
+              195,
+              170,
+              32,
+              112,
+              114,
+              101,
+              99,
+              105,
+              115,
+              97,
+              32,
+              116,
+              101,
+              114,
+              32,
+              112,
+              101,
+              108,
+              111,
+              32,
+              109,
+              101,
+              110,
+              111,
+              115,
+              32,
+              53,
+              48,
+              32,
+              107,
+              103,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              100,
+              111,
+              97,
+              114,
+              46,
+              32,
+              69,
+              109,
+              32,
+              99,
+              97,
+              115,
+              111,
+              115,
+              32,
+              101,
+              115,
+              112,
+              101,
+              99,
+              105,
+              97,
+              105,
+              115,
+              44,
+              32,
+              111,
+              32,
+              109,
+              195,
+              169,
+              100,
+              105,
+              99,
+              111,
+              32,
+              100,
+              111,
+              32,
+              104,
+              101,
+              109,
+              111,
+              99,
+              101,
+              110,
+              116,
+              114,
+              111,
+              32,
+              112,
+              111,
+              100,
+              101,
+              32,
+              97,
+              118,
+              97,
+              108,
+              105,
+              97,
+              114,
+              46,
+              34,
+              125,
+              93,
+              44,
+              34,
+              97,
+              118,
+              105,
+              115,
+              111,
+              115,
+              34,
+              58,
+              91,
+              93,
+              44,
+              34,
+              118,
+              101,
+              114,
+              115,
+              97,
+              111,
+              82,
+              101,
+              103,
+              114,
+              97,
+              115,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              48,
+              57,
+              45,
+              51,
+              48,
+              34,
+              44,
+              34,
+              118,
+              101,
+              110,
+              99,
+              105,
+              100,
+              111,
+              34,
+              58,
+              102,
+              97,
+              108,
+              115,
+              101,
+              44,
+              34,
+              97,
+              103,
+              101,
+              110,
+              100,
+              97,
+              109,
+              101,
+              110,
+              116,
+              111,
+              76,
+              105,
+              98,
+              101,
+              114,
+              97,
+              100,
+              111,
+              34,
+              58,
+              102,
+              97,
+              108,
+              115,
+              101,
+              44,
+              34,
+              98,
+              108,
+              111,
+              113,
+              117,
+              101,
+              105,
+              111,
+              65,
+              103,
+              101,
+              110,
+              100,
+              97,
+              109,
+              101,
+              110,
+              116,
+              111,
+              34,
+              58,
+              34,
+              80,
+              101,
+              108,
+              97,
+              115,
+              32,
+              115,
+              117,
+              97,
+              115,
+              32,
+              114,
+              101,
+              115,
+              112,
+              111,
+              115,
+              116,
+              97,
+              115,
+              44,
+              32,
+              97,
+              32,
+              100,
+              111,
+              97,
+              195,
+              167,
+              195,
+              163,
+              111,
+              32,
+              100,
+              101,
+              32,
+              115,
+              97,
+              110,
+              103,
+              117,
+              101,
+              32,
+              110,
+              195,
+              163,
+              111,
+              32,
+              195,
+              169,
+              32,
+              105,
+              110,
+              100,
+              105,
+              99,
+              97,
+              100,
+              97,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              118,
+              111,
+              99,
+              195,
+              170,
+              46,
+              32,
+              83,
+              101,
+              32,
+              116,
+              105,
+              118,
+              101,
+              114,
+              32,
+              100,
+              195,
+              186,
+              118,
+              105,
+              100,
+              97,
+              115,
+              44,
+              32,
+              99,
+              111,
+              110,
+              118,
+              101,
+              114,
+              115,
+              101,
+              32,
+              99,
+              111,
+              109,
+              32,
+              97,
+              32,
+              101,
+              113,
+              117,
+              105,
+              112,
+              101,
+              32,
+              100,
+              101,
+              32,
+              117,
+              109,
+              32,
+              104,
+              101,
+              109,
+              111,
+              99,
+              101,
+              110,
+              116,
+              114,
+              111,
+              46,
+              34,
+              125,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 6,
+          "responseSize": 748
+        },
+        "id": "1e7b59de-18dc-4880-91f9-4f99228a2ea2",
+        "assertions": [
+          {
+            "assertion": "Formulário de B existe: 200",
+            "skipped": false
+          },
+          {
+            "assertion": "O formulário de B está intacto",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "9d76afe5-bca7-42c3-99ff-8881445b5c5f",
+          "length": 17,
+          "cycles": 1,
+          "position": 13,
+          "iteration": 0,
+          "httpRequestId": "9bfe7f34-9860-4b58-82dc-13cb4a92efb3"
+        },
+        "item": {
+          "id": "f6eb7a80-6e7f-4e70-908f-133c343f1f57",
+          "name": "14. Sem token: GET /doadores/{idB}",
+          "request": {
+            "description": {
+              "content": "Sem token, a API responde 401 antes mesmo de olhar o id.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "{{idB}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "ec2561f2-3aa0-4545-bc3f-5e8ad5b487a5",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Sem token: 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "_lastExecutionId": "5a20a7a5-28f2-4abf-8595-94b76efe09e3"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Sem token, a API responde 401 antes mesmo de olhar o id.",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "3a08912f-dd32-446f-9b06-4bc3840d1462"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "69b953d1-9d34-49e0-9c3a-7e671176ac06",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "692cad3a-44b5-4fcb-9b56-856e74f493b2",
+          "status": "Unauthorized",
+          "code": 401,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "71"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"47-roNPci2evJ8tJJSmgZnVwib9XWI\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:38 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              65,
+              117,
+              116,
+              101,
+              110,
+              116,
+              105,
+              99,
+              97,
+              195,
+              167,
+              195,
+              163,
+              111,
+              32,
+              111,
+              98,
+              114,
+              105,
+              103,
+              97,
+              116,
+              195,
+              179,
+              114,
+              105,
+              97,
+              46,
+              32,
+              70,
+              97,
+              195,
+              167,
+              97,
+              32,
+              108,
+              111,
+              103,
+              105,
+              110,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              99,
+              111,
+              110,
+              116,
+              105,
+              110,
+              117,
+              97,
+              114,
+              46,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 2,
+          "responseSize": 71
+        },
+        "id": "f6eb7a80-6e7f-4e70-908f-133c343f1f57",
+        "assertions": [
+          {
+            "assertion": "Sem token: 401",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "6afceb7b-4da8-4492-98da-fe3b439f1846",
+          "length": 17,
+          "cycles": 1,
+          "position": 14,
+          "iteration": 0,
+          "httpRequestId": "427373d4-1734-40d9-8c82-9ca46a235569"
+        },
+        "item": {
+          "id": "1cdc16c2-44a3-439e-9fc2-c0bd266b927e",
+          "name": "15. Sem token: GET /doadores/me/formulario",
+          "request": {
+            "description": {
+              "content": "O formulário também exige login.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "me",
+                "formulario"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "93181b1a-f4c0-4e7a-831b-7fbcb86286e8",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Sem token: 401\", function () { pm.response.to.have.status(401); });"
+                ],
+                "_lastExecutionId": "e0500ca6-37ab-430a-ba2b-12b3feb2daa5"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "O formulário também exige login.",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "me",
+              "formulario"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "8863c14a-1174-4632-aa3c-eb66b4e34bf3",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "826ae1a2-596e-470e-9f53-ca20bb5b9e0c",
+          "status": "Unauthorized",
+          "code": 401,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "71"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"47-roNPci2evJ8tJJSmgZnVwib9XWI\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:38 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              109,
+              101,
+              110,
+              115,
+              97,
+              103,
+              101,
+              109,
+              34,
+              58,
+              34,
+              65,
+              117,
+              116,
+              101,
+              110,
+              116,
+              105,
+              99,
+              97,
+              195,
+              167,
+              195,
+              163,
+              111,
+              32,
+              111,
+              98,
+              114,
+              105,
+              103,
+              97,
+              116,
+              195,
+              179,
+              114,
+              105,
+              97,
+              46,
+              32,
+              70,
+              97,
+              195,
+              167,
+              97,
+              32,
+              108,
+              111,
+              103,
+              105,
+              110,
+              32,
+              112,
+              97,
+              114,
+              97,
+              32,
+              99,
+              111,
+              110,
+              116,
+              105,
+              110,
+              117,
+              97,
+              114,
+              46,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 2,
+          "responseSize": 71
+        },
+        "id": "1cdc16c2-44a3-439e-9fc2-c0bd266b927e",
+        "assertions": [
+          {
+            "assertion": "Sem token: 401",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "7a2dbd79-61cd-4bc6-9c46-b336c7863243",
+          "length": 17,
+          "cycles": 1,
+          "position": 15,
+          "iteration": 0,
+          "httpRequestId": "ea9ac3a1-3d9a-4d6e-a8d3-56d31fe99a0d"
+        },
+        "item": {
+          "id": "ad99f726-ff5a-4a47-8798-c20c1b906b9d",
+          "name": "16. Limpeza: A exclui a própria conta",
+          "request": {
+            "description": {
+              "content": "Remove a conta de teste A.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "me"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenA}}"
+              }
+            ],
+            "method": "DELETE"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "054f25e7-3d18-473b-97ea-b61098f16e83",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Conta de A excluída: 204\", function () { pm.response.to.have.status(204); });"
+                ],
+                "_lastExecutionId": "46a52a8d-00d1-4d50-9147-da70b66dcc63"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Remove a conta de teste A.",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "me"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "7232f2be-7cf8-4a9a-b30a-1b94641ce668",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "DELETE"
+        },
+        "response": {
+          "id": "fd7fedbe-8081-45d9-a657-a8593329b523",
+          "status": "No Content",
+          "code": 204,
+          "header": [
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:39 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": []
+          },
+          "cookie": [],
+          "responseTime": 6,
+          "responseSize": 0
+        },
+        "id": "ad99f726-ff5a-4a47-8798-c20c1b906b9d",
+        "assertions": [
+          {
+            "assertion": "Conta de A excluída: 204",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "26703a2f-37b8-43a4-8242-00f70ae798d3",
+          "length": 17,
+          "cycles": 1,
+          "position": 16,
+          "iteration": 0,
+          "httpRequestId": "da31741d-1271-471a-902c-75fb0da1e0e4"
+        },
+        "item": {
+          "id": "06fc7ba7-c9cf-4580-a16e-7eacb8793a5d",
+          "name": "17. Limpeza: B exclui a própria conta (e o formulário vai junto)",
+          "request": {
+            "description": {
+              "content": "Remove a conta de teste B. O formulário de B é apagado em cascata (HU-02).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "doadores",
+                "me"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenB}}"
+              }
+            ],
+            "method": "DELETE"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "70212737-a1cd-458e-801c-94f96c7c2f63",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Conta de B excluída: 204\", function () { pm.response.to.have.status(204); });"
+                ],
+                "_lastExecutionId": "e5ecd5fa-a3ea-45e9-9123-43515d025264"
+              }
+            }
+          ]
+        },
+        "request": {
+          "description": {
+            "content": "Remove a conta de teste B. O formulário de B é apagado em cascata (HU-02).",
+            "type": "text/plain"
+          },
+          "url": {
+            "protocol": "http",
+            "port": "3000",
+            "path": [
+              "doadores",
+              "me"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer <JWT omitido>"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "09123f2e-c113-4369-a83b-8ed15f66db07",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:3000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "DELETE"
+        },
+        "response": {
+          "id": "be24f393-a527-468b-912a-287cc05da3b9",
+          "status": "No Content",
+          "code": 204,
+          "header": [
+            {
+              "key": "Date",
+              "value": "Mon, 19 Oct 2026 15:31:39 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": []
+          },
+          "cookie": [],
+          "responseTime": 6,
+          "responseSize": 0
+        },
+        "id": "06fc7ba7-c9cf-4580-a16e-7eacb8793a5d",
+        "assertions": [
+          {
+            "assertion": "Conta de B excluída: 204",
+            "skipped": false
+          }
+        ]
+      }
+    ],
+    "transfers": {
+      "responseTotal": 3423
+    },
+    "failures": [],
+    "error": null
+  }
+}

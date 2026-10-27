@@ -1,0 +1,26 @@
+Evidência da E2-2 (HU-03): teste de sabotagem das regras
+Feito em 19/10/2026.
+
+Para provar que os testes realmente pegam um erro de regra, cada prazo ou limite abaixo foi alterado
+de propósito em backend/src/triagem/regras.ts, um de cada vez, e os testes de análise, de modelo e do
+formulário (tests/triagem-analise.test.ts, tests/triagem-modelo.test.ts e tests/formulario.test.ts) rodaram.
+
+Resultado: toda alteração foi detectada (nenhuma passou sem que algum teste falhasse).
+
+  Alteração feita de propósito                          Testes que falharam
+  ----------------------------------------------------  -------------------
+  Tatuagem em local seguro: 7 dias virou 8                      4
+  Tatuagem sem segurança comprovada: 4 meses virou 3            3
+  Idade mínima: 16 virou 15                                     2
+  Peso mínimo: 50 kg virou 49 kg                                4
+  Gripe ou resfriado com febre: 14 dias virou 13                1
+  Resfriado sem febre: 3 dias virou 2                           2
+  Antibiótico: 14 dias virou 10                                 2
+  Malária (viagem ou mata): 30 dias virou 15                    1
+  Parceiro ocasional: 4 meses virou 2                           1
+
+Depois de cada rodada o arquivo foi restaurado. No fim, regras.ts voltou idêntico ao original e os
+183 testes desses três arquivos voltaram a passar (0 falhas).
+
+Como repetir: mude um valor em regras.ts (por exemplo, procedimentoLocalSeguro: { dias: 7 } para 8),
+rode `npm test` na pasta backend e veja os testes de limite falharem. Desfaça a mudança em seguida.

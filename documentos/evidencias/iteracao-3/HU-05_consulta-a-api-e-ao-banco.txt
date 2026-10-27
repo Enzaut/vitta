@@ -1,0 +1,101 @@
+Evidência da HU-05 (mapa com instituições) e do RNF-008: consultas à API e ao banco. Geradas em 26/10/2026, 20:24:21 (horário de Brasília).
+API: http://localhost:3000  |  banco: PostgreSQL do Docker (vitta-db-1)
+A pessoa de teste está em Taguatinga (latitude -15,833; longitude -48,058). O app envia a localização arredondada em 3 casas decimais (cerca de 100 m).
+
+=== 1. Sem login a lista não abre (RN-011) ===
+GET /instituicoes sem token  ->  HTTP 401  {"mensagem":"Autenticação obrigatória. Faça login para continuar."}
+
+=== 2. Permissão concedida: o app envia a localização e o raio (cenários 1 e 4) ===
+GET /instituicoes?lat=-15.833&lng=-48.058   (sem raio: vale o padrão de 20 km, RN07)
+  HTTP 200  |  total: 5  |  raio usado: 20 km
+  -      0 km  Posto de coleta Taguatinga (demonstração)  | em falta: O-, A-
+  -    3,4 km  Posto de coleta Águas Claras (demonstração)  | em falta: O-
+  -    5,2 km  Posto de coleta Ceilândia (demonstração)  | em falta: B-
+  -    5,8 km  Posto de coleta Samambaia (demonstração)  | em falta: nenhum em falta
+  -   19,2 km  Hemocentro de Brasília  [REAL]  | em falta: estoque não informado
+
+GET /instituicoes?lat=-15.833&lng=-48.058&raioKm=5   (raio trocado para 5 km)
+  HTTP 200  |  total: 2  |  raio usado: 5 km
+  -      0 km  Posto de coleta Taguatinga (demonstração)  | em falta: O-, A-
+  -    3,4 km  Posto de coleta Águas Claras (demonstração)  | em falta: O-
+
+GET /instituicoes?lat=-15.833&lng=-48.058&raioKm=50   (raio trocado para 50 km)
+  HTTP 200  |  total: 8  |  raio usado: 50 km
+  -      0 km  Posto de coleta Taguatinga (demonstração)  | em falta: O-, A-
+  -    3,4 km  Posto de coleta Águas Claras (demonstração)  | em falta: O-
+  -    5,2 km  Posto de coleta Ceilândia (demonstração)  | em falta: B-
+  -    5,8 km  Posto de coleta Samambaia (demonstração)  | em falta: nenhum em falta
+  -   19,2 km  Hemocentro de Brasília  [REAL]  | em falta: estoque não informado
+  -   20,3 km  Posto de coleta Gama (demonstração)  | em falta: O+, O-, AB-
+  -   35,1 km  Posto de coleta Sobradinho (demonstração)  | em falta: A+, B+
+  -   49,9 km  Posto de coleta Planaltina (demonstração)  | em falta: O-
+
+=== 3. Permissão negada ou GPS desligado: o app não envia localização (cenário 5 e RNF-008) ===
+GET /instituicoes   (todas, em ordem de nome, sem distância; a busca manual continua funcionando)
+  HTTP 200  |  total: 8  |  raio usado: nenhum (sem filtro de distância)
+  -         -  Hemocentro de Brasília  [REAL]  | em falta: estoque não informado
+  -         -  Posto de coleta Águas Claras (demonstração)  | em falta: O-
+  -         -  Posto de coleta Ceilândia (demonstração)  | em falta: B-
+  -         -  Posto de coleta Gama (demonstração)  | em falta: O+, O-, AB-
+  -         -  Posto de coleta Planaltina (demonstração)  | em falta: O-
+  -         -  Posto de coleta Samambaia (demonstração)  | em falta: nenhum em falta
+  -         -  Posto de coleta Sobradinho (demonstração)  | em falta: A+, B+
+  -         -  Posto de coleta Taguatinga (demonstração)  | em falta: O-, A-
+
+=== 4. Busca por nome (cenário 3): sem acento e sem diferença de maiúsculas; o raio não vale ===
+GET /instituicoes?busca=hemocentro%20de%20brasilia&lat=-15.833&lng=-48.058&raioKm=5   (a 19,2 km, fora do raio de 5 km, mas a busca acha)
+  HTTP 200  |  total: 1  |  raio usado: nenhum (sem filtro de distância)
+  -   19,2 km  Hemocentro de Brasília  [REAL]  | em falta: estoque não informado
+
+GET /instituicoes?busca=GAMA   (sem localização)
+  HTTP 200  |  total: 1  |  raio usado: nenhum (sem filtro de distância)
+  -         -  Posto de coleta Gama (demonstração)  | em falta: O+, O-, AB-
+
+=== 5. Detalhes de uma instituição (cenário 2) ===
+GET /instituicoes/cbbd3938-9496-4302-bf68-51adbab43c01  ->  HTTP 200
+  {
+    "instituicao": {
+      "id": "cbbd3938-9496-4302-bf68-51adbab43c01",
+      "nome": "Posto de coleta Gama (demonstração)",
+      "endereco": "Endereço de demonstração, Gama - DF",
+      "cidade": "Gama",
+      "uf": "DF",
+      "telefone": null,
+      "horario": "Horário de demonstração: segunda a sexta, das 8h às 17h",
+      "latitude": -16.0156,
+      "longitude": -48.0614,
+      "tiposEmFalta": [
+        "O+",
+        "O-",
+        "AB-"
+      ],
+      "estoqueAtualizadoEm": "2026-10-26T00:00:00.000Z",
+      "demonstracao": true,
+      "distanciaKm": null
+    }
+  }
+GET /instituicoes/00000000-0000-4000-8000-000000000000  ->  HTTP 404  {"mensagem":"Instituição não encontrada."}
+
+=== 6. Parâmetros inválidos recebem mensagem clara ===
+GET /instituicoes?lat=10  ->  HTTP 400  {"mensagem":"Dados inválidos.","campos":{"lat":"Informe latitude e longitude juntas."}}
+GET /instituicoes?lat=91&lng=10  ->  HTTP 400  {"mensagem":"Dados inválidos.","campos":{"lat":"A latitude deve ser um número entre -90 e 90."}}
+GET /instituicoes?lat=10&lng=10&raioKm=101  ->  HTTP 400  {"mensagem":"Dados inválidos.","campos":{"raioKm":"O raio de busca deve ser um número entre 1 e 100 km."}}
+GET /instituicoes?busca=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...  ->  HTTP 400  {"mensagem":"Dados inválidos.","campos":{"busca":"A busca deve ter no máximo 80 caracteres."}}
+
+=== 7. As instituições guardadas no banco (tabela instituicoes) ===
+         codigo         |                    nome                     |     tipo     |  latitude  |  longitude  | em_falta  | estoque_em 
+------------------------+---------------------------------------------+--------------+------------+-------------+-----------+------------
+ hemocentro-de-brasilia | Hemocentro de Brasília                      | REAL         | -15.784637 | -47.8858931 |           | 
+ demo-aguas-claras      | Posto de coleta Águas Claras (demonstração) | demonstração |   -15.8388 |    -48.0267 | O-        | 26/10/2026
+ demo-ceilandia         | Posto de coleta Ceilândia (demonstração)    | demonstração |   -15.8189 |     -48.104 | B-        | 26/10/2026
+ demo-gama              | Posto de coleta Gama (demonstração)         | demonstração |   -16.0156 |    -48.0614 | O+,O-,AB- | 26/10/2026
+ demo-planaltina        | Posto de coleta Planaltina (demonstração)   | demonstração |   -15.6178 |    -47.6493 | O-        | 26/10/2026
+ demo-samambaia         | Posto de coleta Samambaia (demonstração)    | demonstração |    -15.876 |     -48.088 |           | 26/10/2026
+ demo-sobradinho        | Posto de coleta Sobradinho (demonstração)   | demonstração |   -15.6521 |    -47.7894 | A+,B+     | 26/10/2026
+ demo-taguatinga        | Posto de coleta Taguatinga (demonstração)   | demonstração |    -15.833 |     -48.058 | O-,A-     | 26/10/2026
+(8 rows)
+
+Observações:
+- Há 1 instituição real (Hemocentro de Brasília, dados conferidos no site da Fundação Hemocentro de Brasília) e 7 de demonstração, claramente identificadas como fictícias no nome, no endereço e na etiqueta do app.
+- A instituição real não informa estoque, então o app mostra "Estoque não informado pela instituição" em vez de inventar tipos em falta.
+- Em produção, as de demonstração são desligadas com INSTITUICOES_DEMO=false (o comando de carga remove as que existirem).

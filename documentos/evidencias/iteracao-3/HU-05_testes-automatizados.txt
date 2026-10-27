@@ -1,0 +1,74 @@
+Evidência da HU-05 (mapa com instituições) e do RNF-008 (parte do servidor): relatório dos testes automáticos
+Gerado em 26/10/2026 (horário de Brasília). Comando: npx vitest run --reporter=verbose tests/distancia.test.ts tests/instituicoes-dados.test.ts tests/instituicoes.test.ts
+O que é testado: cálculo da distância em linha reta (Haversine), raio de busca (padrão de 20 km, RN07), ordem da mais perto para a mais longe, busca por nome sem acento e sem diferença de maiúsculas (que ignora o raio), lista completa quando a pessoa não envia a localização (permissão negada ou GPS desligado), mensagens de erro e login obrigatório (RN-011).
+Os testes de raio usam instituições de teste num ponto longe do Brasil, com distâncias de 2, 4,999, 5,001, 19,9, 30 e 150 km (os valores de limite ficam um de cada lado da fronteira) e com nomes em ordem alfabética diferente da ordem por distância.
+
+
+ RUN  v5.0.5 C:/Users/user/Downloads/vitta/backend
+
+ ✓ tests/instituicoes.test.ts > as rotas de instituições exigem login (RN-011) > sem token, devolvem 401 13ms
+ ✓ tests/instituicoes.test.ts > as rotas de instituições exigem login (RN-011) > com token inválido, devolvem 401 5ms
+ ✓ tests/instituicoes.test.ts > os pontos de teste ficam mesmo onde dizem (base dos testes de raio) > as distâncias até a origem batem com o combinado 0ms
+ ✓ tests/instituicoes.test.ts > GET /instituicoes com a localização da pessoa (cenário 1 e 4) > raio de 5 km: traz só as que estão dentro, da mais perto para a mais longe 24ms
+ ✓ tests/instituicoes.test.ts > GET /instituicoes com a localização da pessoa (cenário 1 e 4) > 4,999 km entra no raio de 5 km e 5,001 km fica de fora (valores-limite) 11ms
+ ✓ tests/instituicoes.test.ts > GET /instituicoes com a localização da pessoa (cenário 1 e 4) > aumentar o raio para 20 km mostra as outras (cenário 4): 19,9 km entra, 30 km não 10ms
+ ✓ tests/instituicoes.test.ts > GET /instituicoes com a localização da pessoa (cenário 1 e 4) > sem informar o raio, vale o padrão de 20 km 11ms
+ ✓ tests/instituicoes.test.ts > GET /instituicoes com a localização da pessoa (cenário 1 e 4) > raio de 100 km (o máximo) ainda deixa de fora quem está a 150 km 11ms
+ ✓ tests/instituicoes.test.ts > GET /instituicoes com a localização da pessoa (cenário 1 e 4) > nenhuma instituição no raio: lista vazia, sem erro 10ms
+ ✓ tests/instituicoes.test.ts > GET /instituicoes com a localização da pessoa (cenário 1 e 4) > cada instituição traz o que o card e os detalhes precisam, em formato de app 10ms
+ ✓ tests/instituicoes.test.ts > busca por nome (cenário 3) > acha pelo nome, sem se importar com acento ou maiúsculas 30ms
+ ✓ tests/instituicoes.test.ts > busca por nome (cenário 3) > acha por parte do nome e também pela cidade 30ms
+ ✓ tests/instituicoes.test.ts > busca por nome (cenário 3) > com busca, o raio não vale: acha a instituição mesmo a 30 km (e a 150 km) 10ms
+ ✓ tests/instituicoes.test.ts > busca por nome (cenário 3) > com busca e localização, os resultados trazem a distância e vêm do mais perto para o mais longe 9ms
+ ✓ tests/instituicoes.test.ts > busca por nome (cenário 3) > busca sem resultado: lista vazia 9ms
+ ✓ tests/instituicoes.test.ts > busca por nome (cenário 3) > busca em branco conta como sem busca 9ms
+ ✓ tests/instituicoes.test.ts > sem localização (permissão negada ou GPS desligado: cenário 5 da HU-05 e RNF-008) > lista todas, em ordem de nome e sem distância, para a busca manual funcionar 9ms
+ ✓ tests/instituicoes.test.ts > sem localização (permissão negada ou GPS desligado: cenário 5 da HU-05 e RNF-008) > a busca manual acha a instituição pelo nome 9ms
+ ✓ tests/instituicoes.test.ts > parâmetros inválidos devolvem 400 com a mensagem do campo > {"lat":10} 7ms
+ ✓ tests/instituicoes.test.ts > parâmetros inválidos devolvem 400 com a mensagem do campo > {"lng":10} 7ms
+ ✓ tests/instituicoes.test.ts > parâmetros inválidos devolvem 400 com a mensagem do campo > {"lat":"abc","lng":10} 8ms
+ ✓ tests/instituicoes.test.ts > parâmetros inválidos devolvem 400 com a mensagem do campo > {"lat":91,"lng":10} 8ms
+ ✓ tests/instituicoes.test.ts > parâmetros inválidos devolvem 400 com a mensagem do campo > {"lat":10,"lng":181} 10ms
+ ✓ tests/instituicoes.test.ts > parâmetros inválidos devolvem 400 com a mensagem do campo > {"lat":10,"lng":10,"raioKm":0} 8ms
+ ✓ tests/instituicoes.test.ts > parâmetros inválidos devolvem 400 com a mensagem do campo > {"lat":10,"lng":10,"raioKm":101} 9ms
+ ✓ tests/instituicoes.test.ts > parâmetros inválidos devolvem 400 com a mensagem do campo > {"lat":10,"lng":10,"raioKm":"muito"} 8ms
+ ✓ tests/instituicoes.test.ts > parâmetros inválidos devolvem 400 com a mensagem do campo > {"busca":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"} 9ms
+ ✓ tests/instituicoes.test.ts > parâmetros inválidos devolvem 400 com a mensagem do campo > valores limite válidos passam: raio 1 e 100, latitude -90 e 90, longitude -180 e 180 36ms
+ ✓ tests/instituicoes.test.ts > parâmetros inválidos devolvem 400 com a mensagem do campo > parâmetros vazios contam como não informados 10ms
+ ✓ tests/instituicoes.test.ts > GET /instituicoes/:id (cenário 2, sem agendamento) > devolve os detalhes: nome, endereço, telefone, horário e tipos em falta 20ms
+ ✓ tests/instituicoes.test.ts > GET /instituicoes/:id (cenário 2, sem agendamento) > id que não existe devolve 404 com mensagem 17ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > existe ao menos uma instituição real e algumas de demonstração 4ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > os códigos são únicos e escritos em minúsculas, sem espaço 1ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > nenhum código começa com “teste-” (esse prefixo é dos testes automáticos) 0ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > nome, endereço, cidade e horário estão preenchidos e a UF tem 2 letras 2ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > as coordenadas ficam dentro do Distrito Federal 1ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > não há duas instituições no mesmo ponto do mapa 0ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > telefone, quando existe, tem o formato (61) 3327-4413 ou (61) 99999-9999 0ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > os tipos sanguíneos em falta são dos 8 tipos e não se repetem 2ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > a data do estoque, quando existe, é uma data válida AAAA-MM-DD 1ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > instituições reais > trazem a fonte dos dados e não inventam estoque 1ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > instituições reais > o Hemocentro de Brasília está na lista 0ms
+ ✓ tests/instituicoes-dados.test.ts > dados iniciais das instituições > instituições de demonstração > têm “demonstração” no nome e no endereço, e não têm fonte nem telefone 1ms
+ ✓ tests/distancia.test.ts > distanciaKm (Haversine) > do ponto até ele mesmo é zero 3ms
+ ✓ tests/distancia.test.ts > distanciaKm (Haversine) > vale nos dois sentidos 1ms
+ ✓ tests/distancia.test.ts > distanciaKm (Haversine) > 1 grau de latitude tem cerca de 111,19 km 0ms
+ ✓ tests/distancia.test.ts > distanciaKm (Haversine) > 1 grau de longitude encolhe longe do equador (60° de latitude: cerca de 55,6 km) 0ms
+ ✓ tests/distancia.test.ts > distanciaKm (Haversine) > Brasília a São Paulo: cerca de 870 km em linha reta 0ms
+ ✓ tests/distancia.test.ts > distanciaKm (Haversine) > dois pontos distantes meio mundo (antípodas): cerca de 20.015 km, sem dar erro 0ms
+ ✓ tests/distancia.test.ts > distanciaKm (Haversine) > andar N km para o norte dá exatamente N km (base dos testes de raio) 0ms
+ ✓ tests/distancia.test.ts > normalizarParaBusca > tira acentos, maiúsculas e espaços sobrando 1ms
+ ✓ tests/distancia.test.ts > normalizarParaBusca > texto vazio continua vazio 1ms
+
+ Test Files  3 passed (3)
+      Tests  52 passed (52)
+   Start at  20:23:37
+   Duration  2.18s (tests 47%, import 42%, transform 9%, worker 2%)
+
+    Isolate  3 workers spawned · ~220ms startup each (spawn + environment, per file)
+             at least ~440ms faster with isolate: false — reuses workers across files instead of one per file
+
+
+=== Suíte completa do servidor (todas as histórias e requisitos já entregues) ===
+ Test Files  10 passed (10)
+      Tests  367 passed (367)
+   Duration  10.39s (tests 62%, import 34%, transform 2%, worker 1%)

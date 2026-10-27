@@ -1,0 +1,25 @@
+
+ RUN  v5.0.5 C:/Users/user/Downloads/vitta/backend
+
+ ✓ tests/acesso.test.ts > RNF-002: o token de A não abre os dados de B > A tenta ver o perfil de B: 403, e nada de B muda 98ms
+ ✓ tests/acesso.test.ts > RNF-002: o token de A não abre os dados de B > A tenta alterar o perfil de B: 403, e nada de B muda 36ms
+ ✓ tests/acesso.test.ts > RNF-002: o token de A não abre os dados de B > A tenta excluir a conta de B: 403, e nada de B muda 31ms
+ ✓ tests/acesso.test.ts > RNF-002: o token de A não abre os dados de B > A tenta ver o formulário de B: 403, e nada de B muda 29ms
+ ✓ tests/acesso.test.ts > RNF-002: o token de A não abre os dados de B > A tenta enviar o formulário de B: 403, e nada de B muda 33ms
+ ✓ tests/acesso.test.ts > RNF-002: o token de A não abre os dados de B > a recusa não vaza nada de B (nem nome, e-mail ou telefone) 25ms
+ ✓ tests/acesso.test.ts > RNF-002: o token de A não abre os dados de B > id que não existe também recebe 403 (a resposta não revela quais ids existem) 24ms
+ ✓ tests/acesso.test.ts > RNF-002: o token de A não abre os dados de B > o id de B em maiúsculas também é recusado 23ms
+ ✓ tests/acesso.test.ts > RNF-002: o token de A não abre os dados de B > sem token a resposta é 401 (antes de olhar o id) 31ms
+ ✓ tests/acesso.test.ts > RNF-002: cada doador usa os próprios dados normalmente > A acessa e altera os próprios dados por /me e pelo próprio id 42ms
+ ✓ tests/acesso.test.ts > RNF-002: cada doador usa os próprios dados normalmente > A exclui a própria conta pelo id e a conta de B não é afetada 31ms
+ ✓ tests/acesso.test.ts > RNF-002: cada doador usa os próprios dados normalmente > cada um vê só o que é seu 28ms
+ ✓ tests/acesso.test.ts > RNF-002: não há caminho para listar ou alcançar vários doadores > GET /doadores não existe 26ms
+ ✓ tests/acesso.test.ts > RNF-002: não há caminho para listar ou alcançar vários doadores > GET /doadores/ não existe 27ms
+ ✓ tests/acesso.test.ts > RNF-002: não há caminho para listar ou alcançar vários doadores > os campos protegidos não mudam por um PATCH, mesmo se o pedido tentar enviá-los 20ms
+ ✓ tests/acesso.test.ts > RNF-002: não há caminho para listar ou alcançar vários doadores > nenhuma resposta traz senha, hash nem controle de bloqueio 24ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  12:31:54
+   Duration  1.25s (tests 57%, import 36%, transform 7%)
+
