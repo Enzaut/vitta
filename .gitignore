@@ -1,3 +1,6 @@
 node_modules/
 generated/
 .env
+
+# Copias compactadas do codigo (por exemplo, para enviar ao professor)
+*.zip

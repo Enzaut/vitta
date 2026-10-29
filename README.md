@@ -1,6 +1,20 @@
 # VITTA
 
-Aplicativo de incentivo à doação de sangue (projeto da disciplina de Projeto de Software, UCB). A ideia é facilitar a doação e deixar o hábito mais divertido, com pontos e recompensas para quem doa sempre.
+Aplicativo de incentivo à doação de sangue, feito para a disciplina de Projeto de Software (UCB).
+
+A ideia é facilitar a doação e deixar o hábito mais divertido: a pessoa descobre se já pode doar, encontra os hemocentros mais perto e, quanto mais doa, mais pontos e recompensas ganha.
+
+## Experimente
+
+- **Versão web:** https://vitta-app-ucb.onrender.com (abre no navegador do computador ou do celular)
+- **API (teste de saúde):** https://vitta-api-ucb.onrender.com/health
+
+<img src="documentos/apresentacao/qr-vitta-site.png" alt="QR code para abrir o VITTA no celular" width="160">
+
+Duas observações:
+
+- O servidor está no plano grátis da Render e dorme depois de 15 minutos sem uso. Na primeira visita ele pode levar cerca de 1 minuto para acordar (o app avisa "Acordando o servidor" e tenta sozinho).
+- Na versão web o mapa aparece como um quadro explicativo. O mapa completo está no aplicativo, no Expo Go.
 
 ## O que já funciona
 
@@ -16,6 +30,19 @@ Aplicativo de incentivo à doação de sangue (projeto da disciplina de Projeto 
 | Localização (RNF-008) | Pede permissão, avisa quando o GPS está desligado e mantém a busca por nome |
 
 Ainda não existem: agendamento (HU-04), histórico, notificações e pontos/recompensas.
+
+As instituições do mapa são 1 real (Hemocentro de Brasília) e 7 de demonstração, que são fictícias e aparecem marcadas assim no app.
+
+## Banco de dados
+
+O banco é PostgreSQL e está publicado na Render. A imagem mostra as tabelas vistas pelo Prisma Studio; as contas que aparecem são de teste.
+
+![Tabelas do banco PostgreSQL na Render, vistas pelo Prisma Studio](documentos/evidencias/iteracao-3/banco-render-prisma-studio.png)
+
+- `doadores`: as contas. A senha nunca é guardada, só o hash (bcrypt).
+- `formularios_elegibilidade`: o último formulário respondido por cada doador.
+- `instituicoes`: as instituições do mapa.
+- `_prisma_migrations`: o histórico das alterações do banco. As tabelas `pg_stat_*` são da própria Render.
 
 ## Tecnologias
 
@@ -50,33 +77,13 @@ Precisa de: Docker Desktop, Node 22 (ou mais novo) e o app Expo Go no celular (v
 
 Para rodar API e banco juntos em containers: `docker compose up --build` (a API aplica as migrações e carrega as instituições sozinha).
 
-Testes do servidor: em `backend/`, `npm test`.
+## Testes
 
-## Publicar na internet (Render)
+Em `backend/`, rode `npm test`. São 377 testes, com banco de dados de verdade, cobrindo cadastro, login, controle de acesso, formulário de elegibilidade, mapa e CORS.
 
-O arquivo `render.yaml` descreve tudo. Ele cria, no plano grátis da Render:
+## Publicação na internet
 
-- **vitta-db**: o banco PostgreSQL;
-- **vitta-api-ucb**: a API (o Dockerfile de `backend/`); ao ligar, aplica as migrações e carrega as instituições;
-- **vitta-app-ucb**: a versão web do aplicativo (um site gerado pelo Expo).
-
-Passo a passo:
-
-1. Coloque o código no GitHub (este repositório).
-2. Crie uma conta em https://render.com (pode entrar com o GitHub) e autorize a Render a ler este repositório.
-3. No painel, clique em **New +**, depois **Blueprint**, escolha o repositório e a branch `main`, e confirme. A Render lê o `render.yaml` e mostra os três itens. Clique em **Apply** (ou **Deploy Blueprint**).
-4. Espere os três ficarem **Live** (de 5 a 10 minutos na primeira vez).
-5. Abra `https://vitta-api-ucb.onrender.com/health`. Deve aparecer `{"status":"ok","banco":"ok"}`.
-6. Abra `https://vitta-app-ucb.onrender.com`: é a versão web do aplicativo.
-
-Se o endereço da API no painel for diferente de `https://vitta-api-ucb.onrender.com` (a Render acrescenta letras quando o nome já existe), vá em **vitta-app-ucb**, **Environment**, corrija `EXPO_PUBLIC_API_URL` para o endereço certo e faça **Manual Deploy**.
-
-Cuidados do plano grátis:
-
-- A API **dorme depois de 15 minutos sem uso** e leva cerca de 1 minuto para acordar. O app mostra "Acordando o servidor" e tenta sozinho. Antes de uma demonstração, abra o endereço `/health` uns 2 minutos antes.
-- O banco grátis **expira 30 dias depois de criado** (e some 14 dias depois, se não for atualizado). Para algo mais duradouro, use um banco no Neon (grátis, sem prazo): crie o banco lá e troque o valor de `DATABASE_URL` da API no painel da Render.
-- Na versão web, o mapa em si não aparece (a biblioteca de mapas só funciona no celular); a lista de instituições, o raio e a busca funcionam normalmente. O mapa completo está no aplicativo, no Expo Go.
-- `INSTITUICOES_DEMO=true` carrega 7 instituições de demonstração (fictícias, marcadas assim no app) junto com o Hemocentro de Brasília, que é real. Troque para `false` para ficar só com a real.
+O site e a API ficam na Render, no plano grátis, descritos pelo arquivo `render.yaml`. O passo a passo, os cuidados do plano grátis e como ver o banco da Render estão em [PUBLICACAO.md](PUBLICACAO.md).
 
 ## Documentação e evidências
 
