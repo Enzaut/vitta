@@ -11,6 +11,11 @@ export const FormularioController = {
     res.json({ formulario: await FormularioService.obterAtual(req.doadorId!) });
   },
 
+  // RN-004: o app pergunta aqui, a cada vez, antes de deixar a pessoa marcar uma doação.
+  async verificarAgendamento(req: Request, res: Response) {
+    res.json(await FormularioService.verificarAgendamento(req.doadorId!));
+  },
+
   async enviar(req: Request, res: Response) {
     const formulario = await FormularioService.enviar(req.doadorId!, req.body?.respostas);
     res.status(201).json({ formulario });

@@ -21,3 +21,6 @@ doadorRoutes.delete("/:id", DoadorController.excluir);
 doadorRoutes.get("/:id/formulario/modelo", FormularioController.modelo);
 doadorRoutes.get("/:id/formulario", FormularioController.obter);
 doadorRoutes.post("/:id/formulario", FormularioController.enviar);
+
+// RN-004: antes de marcar uma doação, confere se a pessoa passou no formulário e se ele ainda vale.
+doadorRoutes.get("/:id/agendamento/verificacao", FormularioController.verificarAgendamento);

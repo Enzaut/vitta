@@ -3,6 +3,7 @@ import {
   dataValida,
   descreverPrazo,
   formatarBr,
+  formatarDataHoraBr,
   hojeNoBrasil,
   idadeEm,
   somarDias,
@@ -62,6 +63,13 @@ describe("datas da triagem", () => {
 
   it("formata como dia/mês/ano", () => {
     expect(formatarBr("2026-10-05")).toBe("05/10/2026");
+  });
+
+  it("mostra data e hora no horário de Brasília, sem 24:00 na virada do dia", () => {
+    expect(formatarDataHoraBr(new Date("2026-10-19T15:00:00Z"))).toBe("19/10/2026 às 12:00");
+    expect(formatarDataHoraBr(new Date("2026-10-20T03:00:00Z"))).toBe("20/10/2026 às 00:00");
+    expect(formatarDataHoraBr(new Date("2026-10-20T02:59:00Z"))).toBe("19/10/2026 às 23:59");
+    expect(formatarDataHoraBr(new Date("2026-12-31T14:05:00Z"))).toBe("31/12/2026 às 11:05");
   });
 
   it("usa a data de Brasília, mesmo quando em Londres já virou o dia", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AppError } from "../src/errors/AppError";
-import { MODELO, VALIDADE_DIAS, VERSAO_REGRAS, condicaoAtendida, type Campo, type Condicao } from "../src/triagem/modelo";
+import { ESPERA_APOS_REPROVACAO_DIAS, MODELO, VALIDADE_DIAS, VERSAO_REGRAS, condicaoAtendida, type Campo, type Condicao } from "../src/triagem/modelo";
 import {
   CIRURGIAS,
   CONDICOES,
@@ -27,11 +27,13 @@ const multipla = (id: string) => {
 const idsDasOpcoes = (id: string) => multipla(id).opcoes.map((o) => o.id).sort();
 
 describe("modelo do formulário: estrutura", () => {
-  it("tem versão das regras (data) e validade em dias", () => {
+  it("tem versão das regras (data), validade (7 dias) e espera de quem não passou (3 dias)", () => {
     expect(VERSAO_REGRAS).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(MODELO.versaoRegras).toBe(VERSAO_REGRAS);
     expect(MODELO.validadeDias).toBe(VALIDADE_DIAS);
-    expect(VALIDADE_DIAS).toBe(30);
+    expect(VALIDADE_DIAS).toBe(7);
+    expect(MODELO.esperaDias).toBe(ESPERA_APOS_REPROVACAO_DIAS);
+    expect(ESPERA_APOS_REPROVACAO_DIAS).toBe(3);
   });
 
   it("os ids das perguntas não se repetem", () => {

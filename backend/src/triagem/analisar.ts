@@ -2,7 +2,7 @@
 // Não acessa banco nem relógio: recebe tudo pronto (a data de hoje vem de fora), por isso é fácil de testar.
 // Os prazos ficam em regras.ts; a estrutura das perguntas, em modelo.ts.
 import { descreverPrazo, formatarBr, idadeEm, somarMeses, somarPrazo, type DataISO } from "./datas";
-import type { Respostas } from "./modelo";
+import { ESPERA_APOS_REPROVACAO_DIAS, type Respostas } from "./modelo";
 import {
   CIRURGIAS,
   CONDICOES,
@@ -315,18 +315,21 @@ const SEM_DATA_PRIMEIRO = "9999-12-31";
 const DICA_DO_DIA =
   "No dia da doação: leve documento oficial com foto, esteja descansado(a) e alimentado(a), beba bastante água, evite comida gordurosa nas 3 horas antes e bebida alcoólica nas 12 horas antes.";
 
+// Quem não passa pode responder de novo depois desse prazo (RN-005).
+const ESPERA = `${ESPERA_APOS_REPROVACAO_DIAS} dias`;
+
 function mensagemFinal(resultado: Resultado, liberadoEm: DataISO | null): string {
   switch (resultado) {
     case "APTO":
-      return "Ótimo! Pelas suas respostas, você pode agendar a sua doação. A decisão final é da triagem no hemocentro.";
+      return "Ótimo! Você passou no formulário e pode agendar a sua doação. A decisão final é da triagem no hemocentro.";
     case "AVALIACAO":
-      return "Você pode agendar a sua doação. A triagem no hemocentro vai avaliar com você os pontos abaixo, e a decisão final é dela.";
+      return "Você passou no formulário e pode agendar a sua doação. A triagem no hemocentro vai avaliar com você os pontos abaixo, e a decisão final é dela.";
     case "INAPTO_TEMPORARIO":
       return liberadoEm
-        ? `No momento você não está apto(a) para realizar doações. O agendamento estará disponível a partir de ${formatarBr(liberadoEm)}.`
-        : "No momento você não está apto(a) para realizar doações. Responda ao formulário de novo quando a situação abaixo mudar.";
+        ? `No momento você não está apto(a) para realizar doações. Você poderá doar a partir de ${formatarBr(liberadoEm)}. Para agendar, responda ao formulário de novo quando essa data chegar (só é possível responder de novo depois de ${ESPERA}).`
+        : `No momento você não está apto(a) para realizar doações. Responda ao formulário de novo quando a situação abaixo mudar, depois de ${ESPERA}.`;
     case "INAPTO":
-      return "Pelas suas respostas, a doação de sangue não é indicada para você. Se tiver dúvidas, converse com a equipe de um hemocentro.";
+      return `Pelas suas respostas, a doação de sangue não é indicada para você. Se tiver dúvidas, converse com a equipe de um hemocentro. Você pode responder ao formulário de novo depois de ${ESPERA}.`;
   }
 }
 

@@ -8,7 +8,8 @@ export function rotaNaoEncontrada(_req: Request, res: Response) {
 // Último passo de toda requisição com erro: transforma o erro em uma resposta JSON.
 export function tratarErros(erro: unknown, _req: Request, res: Response, _next: NextFunction) {
   if (erro instanceof AppError) {
-    res.status(erro.status).json({ mensagem: erro.message, ...(erro.campos && { campos: erro.campos }) });
+    for (const [nome, valor] of Object.entries(erro.extras?.cabecalhos ?? {})) res.setHeader(nome, valor);
+    res.status(erro.status).json({ mensagem: erro.message, ...(erro.campos && { campos: erro.campos }), ...erro.extras?.corpo });
     return;
   }
 

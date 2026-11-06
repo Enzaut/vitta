@@ -9,8 +9,11 @@
 // Mudou algum prazo? Altere regras.ts e esta versão: cada formulário guarda a versão com que foi calculado.
 export const VERSAO_REGRAS = "2026-09-30";
 
-// Quanto tempo vale um formulário respondido (RN-003). A triagem presencial repete tudo no dia da doação.
-export const VALIDADE_DIAS = 30;
+// Quanto tempo vale um formulário em que a pessoa passou (RN-003): uma semana. A triagem presencial repete tudo no dia da doação.
+export const VALIDADE_DIAS = 7;
+
+// Quanto tempo a pessoa que não passou espera para responder o formulário de novo (RN-005).
+export const ESPERA_APOS_REPROVACAO_DIAS = 3;
 
 export type Valor = string | number | boolean;
 
@@ -43,7 +46,7 @@ export type Bloco = {
   campos: Campo[];
 };
 
-export type Modelo = { versaoRegras: string; validadeDias: number; blocos: Bloco[] };
+export type Modelo = { versaoRegras: string; validadeDias: number; esperaDias: number; blocos: Bloco[] };
 
 // Respostas: pergunta -> valor. Em pergunta de marcar várias, o valor é { opção: { campo: valor } }
 // (objeto vazio = "nenhuma destas"). Datas em AAAA-MM-DD.
@@ -89,6 +92,7 @@ const camposDeProcedimento = (): CampoSimples[] => [
 export const MODELO: Modelo = {
   versaoRegras: VERSAO_REGRAS,
   validadeDias: VALIDADE_DIAS,
+  esperaDias: ESPERA_APOS_REPROVACAO_DIAS,
   blocos: [
     {
       id: "hoje",

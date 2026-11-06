@@ -82,6 +82,21 @@ export function hojeNoBrasil(agora: Date = new Date()): DataISO {
   }).format(agora);
 }
 
+// Momento (data e hora) no horário de Brasília, para as mensagens: "22/10/2026 às 12:00".
+export function formatarDataHoraBr(momento: Date): string {
+  const partes = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(momento);
+  const valor = (tipo: string) => partes.find((parte) => parte.type === tipo)!.value;
+  return `${valor("day")}/${valor("month")}/${valor("year")} às ${valor("hour")}:${valor("minute")}`;
+}
+
 // Texto do prazo para as mensagens: "14 dias", "1 mês", "4 meses", "3 anos".
 export function descreverPrazo(prazo: Prazo): string {
   const partes: string[] = [];

@@ -44,7 +44,8 @@ describe("GET /doadores/me/formulario/modelo", () => {
 
     expect(resposta.status).toBe(200);
     expect(resposta.body.modelo.versaoRegras).toBe("2026-09-30");
-    expect(resposta.body.modelo.validadeDias).toBe(30);
+    expect(resposta.body.modelo.validadeDias).toBe(7);
+    expect(resposta.body.modelo.esperaDias).toBe(3);
     expect(resposta.body.modelo.blocos).toHaveLength(10);
     expect(resposta.body.modelo.blocos[0]).toMatchObject({ id: "hoje", titulo: "Como você está hoje" });
     // As regras (prazos) não vão para o app.
@@ -77,12 +78,15 @@ describe("cenário 1: formulário respondido, doador apto", () => {
       motivos: [],
       versaoRegras: "2026-09-30",
       preenchidoEm: "2026-10-19T15:00:00.000Z",
-      validoAte: "2026-11-18", // 30 dias depois do preenchimento
+      validoAte: "2026-10-26", // 7 dias depois do preenchimento
+      aprovado: true,
       vencido: false,
       agendamentoLiberado: true,
       bloqueioAgendamento: null,
+      podeResponderEm: null,
+      podeResponderAgora: true,
     });
-    expect(f.mensagem).toContain("Pelas suas respostas, você pode agendar a sua doação");
+    expect(f.mensagem).toContain("Você passou no formulário e pode agendar a sua doação");
     expect(f.mensagem).toContain("A decisão final é da triagem no hemocentro");
     // As respostas não voltam na resposta da API.
     expect(f).not.toHaveProperty("respostas");
@@ -90,7 +94,7 @@ describe("cenário 1: formulário respondido, doador apto", () => {
     // O que ficou no banco (evidência da matriz: data do preenchimento e validade).
     const linha = await prisma.formularioElegibilidade.findUniqueOrThrow({ where: { doadorId: doador.id } });
     expect(linha.preenchidoEm.toISOString()).toBe("2026-10-19T15:00:00.000Z");
-    expect(linha.validoAte.toISOString().slice(0, 10)).toBe("2026-11-18");
+    expect(linha.validoAte.toISOString().slice(0, 10)).toBe("2026-10-26");
     expect(linha.resultado).toBe("APTO");
     expect(linha.versaoRegras).toBe("2026-09-30");
     expect(linha.respostas).toMatchObject({ bemHoje: true, peso: 70, declaracao: true });
@@ -127,26 +131,33 @@ describe("cenário 2: doador temporariamente inapto", () => {
     const f = resposta.body.formulario;
     expect(f.resultado).toBe("INAPTO_TEMPORARIO");
     expect(f.liberadoEm).toBe("2026-10-23");
-    expect(f.mensagem).toBe("No momento você não está apto(a) para realizar doações. O agendamento estará disponível a partir de 23/10/2026.");
+    expect(f.mensagem).toBe(
+      "No momento você não está apto(a) para realizar doações. Você poderá doar a partir de 23/10/2026. Para agendar, responda ao formulário de novo quando essa data chegar (só é possível responder de novo depois de 3 dias).",
+    );
     expect(f.motivos).toHaveLength(1);
     expect(f.motivos[0]).toMatchObject({ codigo: "procedimentos.tatuagem", tipo: "TEMPORARIO", ate: "2026-10-23", fonte: "Anexo 2 (parte A); Art. 66, VII" });
     expect(f.motivos[0].mensagem).toContain("Tatuagem recente");
+    expect(f.aprovado).toBe(false);
     expect(f.agendamentoLiberado).toBe(false);
-    expect(f.bloqueioAgendamento).toBe(f.mensagem);
+    expect(f.bloqueioAgendamento).toBe(
+      "No momento você não está apto(a) para realizar doações. Você poderá doar a partir de 23/10/2026. Você poderá responder ao formulário de novo em 22/10/2026 às 12:00.",
+    );
+    expect(f.podeResponderEm).toBe("2026-10-22T15:00:00.000Z"); // 3 dias (72 horas) depois de responder
+    expect(f.podeResponderAgora).toBe(false);
   });
 
-  it("no dia da data de retorno o agendamento abre sozinho (e um dia antes ainda não)", async () => {
+  it("o agendamento não abre sozinho na data de retorno: só passando no formulário de novo (RN-005)", async () => {
     const { token } = await criarConta();
     await enviar(token, tatuagemRecente());
 
-    agoraEm(diaDepois(3)); // 22/10
-    expect((await obter(token)).body.formulario.agendamentoLiberado).toBe(false);
+    agoraEm(diaDepois(4)); // 23/10: já passou a data de retorno da tatuagem
+    const antes = (await obter(token)).body.formulario;
+    expect(antes.resultado).toBe("INAPTO_TEMPORARIO"); // o resultado guardado é o de 19/10
+    expect(antes.agendamentoLiberado).toBe(false); // então o agendamento continua bloqueado
+    expect(antes.podeResponderAgora).toBe(true); // mas os 3 dias já passaram e dá para responder de novo
 
-    agoraEm(diaDepois(4)); // 23/10
-    const aberto = (await obter(token)).body.formulario;
-    expect(aberto.agendamentoLiberado).toBe(true);
-    expect(aberto.bloqueioAgendamento).toBeNull();
-    expect(aberto.resultado).toBe("INAPTO_TEMPORARIO"); // o resultado guardado não muda; só o agendamento abre
+    const novo = (await enviar(token, tatuagemRecente())).body.formulario;
+    expect(novo).toMatchObject({ resultado: "APTO", aprovado: true, agendamentoLiberado: true, bloqueioAgendamento: null });
   });
 
   it("sem data de retorno (ainda com sintomas), o agendamento só abre respondendo de novo", async () => {
@@ -214,16 +225,16 @@ describe("outros resultados", () => {
 });
 
 describe("cenário 3: formulário não atualizado no prazo (RN-003 e RN-004)", () => {
-  it("vale por 30 dias: no último dia ainda libera; no dia seguinte pede para responder de novo", async () => {
+  it("vale por 7 dias: no último dia ainda libera; no dia seguinte pede para responder de novo", async () => {
     const { token } = await criarConta();
     await enviar(token, respostasLimpas());
 
-    agoraEm(diaDepois(30)); // 18/11: último dia de validade
+    agoraEm(diaDepois(7)); // 26/10: último dia de validade
     expect((await obter(token)).body.formulario).toMatchObject({ vencido: false, agendamentoLiberado: true });
 
-    agoraEm(diaDepois(31)); // 19/11
+    agoraEm(diaDepois(8)); // 27/10
     const vencido = (await obter(token)).body.formulario;
-    expect(vencido).toMatchObject({ vencido: true, agendamentoLiberado: false });
+    expect(vencido).toMatchObject({ aprovado: true, vencido: true, agendamentoLiberado: false });
     expect(vencido.bloqueioAgendamento).toBe(MSG_FORMULARIO_VENCIDO);
     expect(vencido.bloqueioAgendamento).toBe("Suas informações de elegibilidade precisam ser atualizadas. Responda ao formulário para continuar agendando doações.");
   });
@@ -234,7 +245,7 @@ describe("cenário 3: formulário não atualizado no prazo (RN-003 e RN-004)", (
     const f = (await enviar(token, respostasLimpas({ transfusao: true, transfusaoData: "2026-10-09" }))).body.formulario;
     expect(f.liberadoEm).toBe("2027-02-09");
 
-    agoraEm(diaDepois(31));
+    agoraEm(diaDepois(8));
     const vencido = (await obter(token)).body.formulario;
     expect(vencido.vencido).toBe(true);
     expect(vencido.agendamentoLiberado).toBe(false);
@@ -276,13 +287,13 @@ describe("responder de novo", () => {
   it("substitui o formulário anterior (só o mais recente fica guardado)", async () => {
     const { token, doador } = await criarConta();
     await enviar(token, respostasLimpas({ peso: 45 }));
-    agoraEm(diaDepois(2));
+    agoraEm(diaDepois(3)); // depois dos 3 dias de espera de quem não passou
 
     const novo = (await enviar(token, respostasLimpas({ peso: 52 }))).body.formulario;
 
     expect(novo.resultado).toBe("APTO");
-    expect(novo.preenchidoEm).toBe(diaDepois(2));
-    expect(novo.validoAte).toBe("2026-11-20");
+    expect(novo.preenchidoEm).toBe(diaDepois(3));
+    expect(novo.validoAte).toBe("2026-10-29");
     expect(await prisma.formularioElegibilidade.count({ where: { doadorId: doador.id } })).toBe(1);
     expect((await obter(token)).body.formulario.resultado).toBe("APTO");
   });

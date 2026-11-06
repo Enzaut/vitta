@@ -33,7 +33,9 @@ export type Bloco = {
   campos: Campo[];
 };
 
-export type Modelo = { versaoRegras: string; validadeDias: number; blocos: Bloco[] };
+// validadeDias: quanto tempo vale um formulário em que a pessoa passou (RN-003).
+// esperaDias: quanto quem não passou espera para responder de novo (RN-005).
+export type Modelo = { versaoRegras: string; validadeDias: number; esperaDias: number; blocos: Bloco[] };
 
 // ---------------------------------------------------------------- resultado
 export type Resultado = "APTO" | "INAPTO_TEMPORARIO" | "INAPTO" | "AVALIACAO";
@@ -58,9 +60,27 @@ export type Formulario = {
   motivos: Motivo[];
   avisos: string[];
   versaoRegras: string;
+  // A resposta do formulário: positiva (passou: APTO ou AVALIACAO) ou negativa (não passou).
+  aprovado: boolean;
+  // Passou da validade de 7 dias: é preciso responder de novo, tenha passado ou não.
   vencido: boolean;
   agendamentoLiberado: boolean;
   bloqueioAgendamento: string | null;
+  // RN-005: quem não passou espera 3 dias para responder de novo (momento exato; nulo para quem passou).
+  podeResponderEm: string | null;
+  podeResponderAgora: boolean;
+};
+
+// RN-004: a conferência que o app faz antes de deixar a pessoa marcar uma doação.
+export type CodigoDaVerificacao = "LIBERADO" | "SEM_FORMULARIO" | "VENCIDO" | "NAO_APROVADO";
+
+export type VerificacaoDeAgendamento = {
+  liberado: boolean;
+  codigo: CodigoDaVerificacao;
+  // Por que não está liberado (nulo quando está).
+  mensagem: string | null;
+  validoAte: string | null;
+  podeResponderEm: string | null;
 };
 
 // Respostas no formato da API: pergunta -> valor (datas em AAAA-MM-DD).
@@ -72,6 +92,11 @@ export const apiFormulario = {
   // Nulo se a pessoa ainda não respondeu.
   atual: (token: string) => requisicao<{ formulario: Formulario | null }>("/doadores/me/formulario", { token }),
 
+  // Quem não passou e ainda está nos 3 dias de espera recebe erro 429 (com a data na mensagem).
   enviar: (token: string, respostas: Respostas) =>
     requisicao<{ formulario: Formulario }>("/doadores/me/formulario", { metodo: "POST", corpo: { respostas }, token }),
+
+  // RN-004: a API olha o formulário no momento da pergunta (passou? ainda vale?). Chamar antes de cada agendamento.
+  verificarAgendamento: (token: string) =>
+    requisicao<VerificacaoDeAgendamento>("/doadores/me/agendamento/verificacao", { token }),
 };

@@ -40,7 +40,7 @@ describe("resultado base", () => {
     expect(a.resultado).toBe("APTO");
     expect(a.liberadoEm).toBeNull();
     expect(a.motivos).toEqual([]);
-    expect(a.mensagem).toContain("você pode agendar");
+    expect(a.mensagem).toContain("Você passou no formulário e pode agendar");
     expect(a.mensagem).toContain("A decisão final é da triagem");
     expect(a.avisos.at(-1)).toMatch(/No dia da doação/);
   });
@@ -478,7 +478,8 @@ describe("vários motivos juntos", () => {
     });
     expect(a.resultado).toBe("INAPTO_TEMPORARIO");
     expect(a.liberadoEm).toBe(somarMeses(diasAtras(30), 4));
-    expect(a.mensagem).toContain("O agendamento estará disponível a partir de");
+    expect(a.mensagem).toContain("Você poderá doar a partir de");
+    expect(a.mensagem).toContain("responda ao formulário de novo quando essa data chegar (só é possível responder de novo depois de 3 dias)");
   });
 
   it("um impedimento sem data deixa a data de retorno em branco", () => {

@@ -1,11 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback, useEffect } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import type { Formulario } from "../api/formulario";
 import { useAuth } from "../auth/AuthContext";
 import { Aviso } from "../components/Aviso";
 import { Botao } from "../components/Botao";
 import { Tela } from "../components/Tela";
-import { APARENCIA } from "../formulario/aparencia";
+import { aindaEmEspera, aparenciaDo } from "../formulario/aparencia";
 import type { AbaProps } from "../navigation/types";
 import { cores, fontes, raio, tamanhos } from "../theme";
 import { formatarDataBr, primeiroNome } from "../validation/campos";
@@ -22,6 +24,13 @@ export function InicioScreen({ navigation }: Props) {
       navigation.navigate("FormularioIntro");
     }
   }, [irParaFormulario, formulario, concluirRedirecionamento, navigation]);
+
+  // A validade (7 dias) e a espera (3 dias) passam com o tempo: sempre que esta tela volta a aparecer, confere o formulário de novo.
+  useFocusEffect(
+    useCallback(() => {
+      void carregarFormulario();
+    }, [carregarFormulario]),
+  );
 
   return (
     <Tela>
@@ -50,23 +59,11 @@ export function InicioScreen({ navigation }: Props) {
         )}
 
         {formulario && (
-          <>
-            <View style={[estilos.situacao, { backgroundColor: APARENCIA[formulario.resultado].fundo }]}>
-              <Ionicons name={APARENCIA[formulario.resultado].icone} size={22} color={APARENCIA[formulario.resultado].cor} />
-              <Text style={[estilos.situacaoTexto, { color: APARENCIA[formulario.resultado].cor }]}>{APARENCIA[formulario.resultado].titulo}</Text>
-            </View>
-            <Text style={estilos.cartaoTexto}>
-              {formulario.agendamentoLiberado
-                ? `Agendamento liberado. O formulário vale até ${formatarDataBr(formulario.validoAte)}.`
-                : formulario.bloqueioAgendamento}
-            </Text>
-            <Botao titulo="Ver resultado" variante="secundario" aoPressionar={() => navigation.navigate("ResultadoFormulario")} />
-            <Botao
-              titulo="Responder de novo"
-              variante={formulario.vencido ? "primario" : "secundario"}
-              aoPressionar={() => navigation.navigate("FormularioIntro")}
-            />
-          </>
+          <RespostaDoFormulario
+            formulario={formulario}
+            aoVerResultado={() => navigation.navigate("ResultadoFormulario")}
+            aoResponder={() => navigation.navigate("FormularioIntro")}
+          />
         )}
       </View>
 
@@ -77,12 +74,45 @@ export function InicioScreen({ navigation }: Props) {
   );
 }
 
+type RespostaProps = { formulario: Formulario; aoVerResultado: () => void; aoResponder: () => void };
+
+// A resposta do formulário: passou ou não passou, até quando vale e, para quem não passou, quando pode responder de novo.
+function RespostaDoFormulario({ formulario, aoVerResultado, aoResponder }: RespostaProps) {
+  const visual = aparenciaDo(formulario);
+  const emEspera = aindaEmEspera(formulario);
+
+  return (
+    <>
+      <View style={[estilos.situacao, { backgroundColor: visual.fundo }]}>
+        <Ionicons name={visual.icone} size={22} color={visual.cor} />
+        <Text style={[estilos.situacaoTexto, { color: visual.cor }]}>{visual.titulo}</Text>
+      </View>
+      <Text style={estilos.cartaoTexto}>
+        {formulario.agendamentoLiberado
+          ? `Agendamento liberado. O formulário vale até ${formatarDataBr(formulario.validoAte)}.`
+          : formulario.bloqueioAgendamento}
+      </Text>
+      {formulario.agendamentoLiberado && (
+        <Text style={estilos.dica}>Antes de cada agendamento, o app confere se você passou e se o formulário ainda vale.</Text>
+      )}
+      <Botao titulo="Ver resultado" variante="secundario" aoPressionar={aoVerResultado} />
+      <Botao
+        titulo="Responder de novo"
+        variante={formulario.vencido || (!formulario.aprovado && !emEspera) ? "primario" : "secundario"}
+        desabilitado={emEspera}
+        aoPressionar={aoResponder}
+      />
+    </>
+  );
+}
+
 const estilos = StyleSheet.create({
   titulo: { fontFamily: fontes.titulo, fontSize: tamanhos.titulo, color: cores.texto },
   subtitulo: { fontFamily: fontes.texto, fontSize: tamanhos.texto, color: cores.textoSecundario, marginTop: 4, marginBottom: 24 },
   cartao: { backgroundColor: cores.fundoSecundario, borderRadius: raio, padding: 20, gap: 12, marginBottom: 24 },
   cartaoTitulo: { fontFamily: fontes.subtitulo, fontSize: 18, color: cores.texto },
   cartaoTexto: { fontFamily: fontes.texto, fontSize: tamanhos.textoSecundario, color: cores.textoSecundario, lineHeight: 20 },
+  dica: { fontFamily: fontes.texto, fontSize: 13, color: cores.textoSecundario, lineHeight: 19 },
   carregando: { alignSelf: "flex-start" },
   situacao: { flexDirection: "row", alignItems: "center", gap: 8, borderRadius: raio, paddingVertical: 10, paddingHorizontal: 12 },
   situacaoTexto: { flex: 1, fontFamily: fontes.botao, fontSize: tamanhos.texto },

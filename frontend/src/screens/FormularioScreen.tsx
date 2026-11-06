@@ -25,7 +25,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Formulario">;
 
 // HU-03: o formulário, um bloco de perguntas por passo. As perguntas vêm da API.
 export function FormularioScreen({ navigation }: Props) {
-  const { buscarModeloDoFormulario, enviarFormulario } = useAuth();
+  const { buscarModeloDoFormulario, enviarFormulario, carregarFormulario } = useAuth();
 
   const [modelo, setModelo] = useState<Modelo | null>(null);
   const [erroModelo, setErroModelo] = useState<string | null>(null);
@@ -119,6 +119,8 @@ export function FormularioScreen({ navigation }: Props) {
     } catch (erro) {
       if (erro instanceof ApiError && erro.campos) mostrarErros(erro.campos, erro.message);
       else setErroGeral(erro instanceof ApiError ? erro.message : "Não foi possível enviar o formulário. Tente novamente.");
+      // RN-005: a API recusou porque ainda falta esperar (a mensagem já diz até quando). Atualiza o app com o que ela sabe.
+      if (erro instanceof ApiError && erro.status === 429) void carregarFormulario();
       setChaveRolagem((k) => k + 1);
     } finally {
       setEnviando(false);

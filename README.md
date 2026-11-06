@@ -23,13 +23,13 @@ Duas observações:
 | Boas-vindas | Carrossel na primeira vez que o app abre: por que doar, a ideia do app e como ele funciona |
 | Cadastro e login (HU-01) | Conta com e-mail e senha, login com token (JWT) e bloqueio depois de 5 erros de senha |
 | Excluir conta (HU-02) | Apaga a conta e todos os dados |
-| Formulário de elegibilidade (HU-03) | Perguntas rápidas sobre saúde; diz se a pessoa já pode doar ou a partir de que dia (Portaria GM/MS 11.685/2026) |
+| Formulário de elegibilidade (HU-03) | Perguntas rápidas sobre saúde (Portaria GM/MS 11.685/2026). A resposta é positiva (passou) ou negativa (não passou). Quem passou fica com o formulário válido por 7 dias e pode agendar; quem não passou espera 3 dias para responder de novo. Antes de cada agendamento, o app confere se a pessoa passou e se o formulário ainda vale |
 | Mapa com instituições (HU-05) | Instituições de coleta perto da pessoa, raio de busca, busca por nome, detalhes e tipos de sangue em falta (sem o botão de agendar, que vem com a HU-04) |
 | Perfil (HU-11) | Telefone e tipo sanguíneo |
 | Controle de acesso (RNF-002) | Cada doador só enxerga e altera os próprios dados |
 | Localização (RNF-008) | Pede permissão, avisa quando o GPS está desligado e mantém a busca por nome |
 
-Ainda não existem: agendamento (HU-04), histórico, notificações e pontos/recompensas.
+Ainda não existem: agendamento (HU-04; a conferência do formulário que vem antes dele já está pronta na API, em `GET /doadores/me/agendamento/verificacao`), histórico, notificações e pontos/recompensas.
 
 As instituições do mapa são 1 real (Hemocentro de Brasília) e 7 de demonstração, que são fictícias e aparecem marcadas assim no app.
 
@@ -49,7 +49,7 @@ O banco é PostgreSQL e está publicado na Render. A imagem mostra as tabelas vi
 - **Aplicativo** (`frontend/`): Expo SDK 58, React Native 0.88, TypeScript, React Navigation.
 - **API** (`backend/`): Node 22, Express 5, TypeScript, Prisma 7, PostgreSQL 16, Zod, JWT.
 - **Infraestrutura**: Docker e Docker Compose; publicação na Render.
-- **Testes**: Vitest e Supertest (377 testes automáticos).
+- **Testes**: Vitest e Supertest (414 testes automáticos).
 
 ```
 vitta/
@@ -79,7 +79,7 @@ Para rodar API e banco juntos em containers: `docker compose up --build` (a API 
 
 ## Testes
 
-Em `backend/`, rode `npm test`. São 377 testes, com banco de dados de verdade, cobrindo cadastro, login, controle de acesso, formulário de elegibilidade, mapa e CORS.
+Em `backend/`, rode `npm test`. São 414 testes, com banco de dados de verdade, cobrindo cadastro, login, controle de acesso, formulário de elegibilidade (inclusive a espera de 3 dias, a validade de 7 dias e a conferência antes de agendar), mapa e CORS.
 
 ## Publicação na internet
 

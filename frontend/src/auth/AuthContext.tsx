@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { AppState } from "react-native";
 import { api, type AlteracaoPerfil, type DadosCadastro, type Doador } from "../api/auth";
 import { ApiError, configurarSessaoExpirada } from "../api/client";
-import { apiFormulario, type Formulario, type Modelo, type Respostas } from "../api/formulario";
+import { apiFormulario, type Formulario, type Modelo, type Respostas, type VerificacaoDeAgendamento } from "../api/formulario";
 import { apiInstituicoes, type FiltroInstituicoes, type ListaDeInstituicoes } from "../api/instituicoes";
 import { apagarToken, lerToken, salvarToken } from "../storage/tokenStorage";
 import { primeiroNome } from "../validation/campos";
@@ -27,6 +28,8 @@ type Contexto = {
   carregarFormulario(): Promise<void>;
   buscarModeloDoFormulario(): Promise<Modelo>;
   enviarFormulario(respostas: Respostas): Promise<Formulario>;
+  // RN-004: antes de marcar uma doação (HU-04), pergunta à API, a cada vez, se a pessoa passou no formulário e se ele ainda vale.
+  verificarAgendamento(): Promise<VerificacaoDeAgendamento>;
   // HU-05: instituições de coleta (com a localização, só as que estão dentro do raio).
   listarInstituicoes(filtro: FiltroInstituicoes): Promise<ListaDeInstituicoes>;
 };
@@ -53,6 +56,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // segue sem o formulário; a tela inicial mostra o botão "Tentar de novo"
     }
   }, []);
+
+  // A validade (7 dias) e a espera (3 dias) passam com o app em segundo plano: ao voltar para ele, confere o formulário de novo.
+  useEffect(() => {
+    const assinatura = AppState.addEventListener("change", (estado) => {
+      if (estado === "active") void carregarFormulario();
+    });
+    return () => assinatura.remove();
+  }, [carregarFormulario]);
 
   // A API recusou o nosso token (venceu ou a conta não existe mais): volta para a tela inicial.
   useEffect(() => {
@@ -178,6 +189,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return novo;
   }, []);
 
+  // Nunca confia no formulário guardado no app: a API confere de novo (passou? ainda vale?) no momento da pergunta.
+  const verificarAgendamento = useCallback(async () => {
+    const token = tokenRef.current;
+    if (!token) throw new ApiError(401, "Sessão inválida ou expirada. Faça login novamente.");
+    return apiFormulario.verificarAgendamento(token);
+  }, []);
+
   const listarInstituicoes = useCallback(async (filtro: FiltroInstituicoes) => {
     const token = tokenRef.current;
     if (!token) throw new ApiError(401, "Sessão inválida ou expirada. Faça login novamente.");
@@ -201,6 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       carregarFormulario,
       buscarModeloDoFormulario,
       enviarFormulario,
+      verificarAgendamento,
       listarInstituicoes,
     }),
     [
@@ -219,6 +238,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       carregarFormulario,
       buscarModeloDoFormulario,
       enviarFormulario,
+      verificarAgendamento,
       listarInstituicoes,
     ],
   );
