@@ -7,6 +7,8 @@ import type { Instituicao } from "../api/instituicoes";
 export type AbasParamList = {
   Inicio: undefined;
   Mapa: undefined;
+  // HU-04: formulário de agendamento. Vindo dos detalhes de uma instituição, chega com ela já escolhida (HU-05, cenário 2).
+  Agendar: { instituicaoId?: string } | undefined;
   Perfil: undefined;
 };
 

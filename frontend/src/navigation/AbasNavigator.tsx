@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { AgendarScreen } from "../screens/AgendarScreen";
 import { InicioScreen } from "../screens/InicioScreen";
 import { MapaScreen } from "../screens/MapaScreen";
 import { PerfilScreen } from "../screens/PerfilScreen";
@@ -10,7 +11,7 @@ const Abas = createBottomTabNavigator<AbasParamList>();
 
 type Icone = keyof typeof Ionicons.glyphMap;
 
-// Menu de baixo do doador. O agendamento ganha a própria aba quando a HU-04 entrar.
+// Menu de baixo do doador: início, mapa das instituições, agendamento (HU-04) e perfil.
 export function AbasNavigator() {
   return (
     <Abas.Navigator
@@ -27,6 +28,7 @@ export function AbasNavigator() {
     >
       <Abas.Screen name="Inicio" component={InicioScreen} options={opcoes("VITTA", "Início", "home-outline")} />
       <Abas.Screen name="Mapa" component={MapaScreen} options={opcoes("Hemocentros", "Mapa", "map-outline")} />
+      <Abas.Screen name="Agendar" component={AgendarScreen} options={opcoes("Agendar doação", "Agendar", "calendar-outline")} />
       <Abas.Screen name="Perfil" component={PerfilScreen} options={opcoes("Meu Perfil", "Perfil", "person-outline")} />
     </Abas.Navigator>
   );

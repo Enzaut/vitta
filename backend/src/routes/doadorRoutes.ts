@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { AgendamentoController } from "../controllers/AgendamentoController";
 import { DoadorController } from "../controllers/DoadorController";
 import { FormularioController } from "../controllers/FormularioController";
 import { autenticar } from "../middlewares/autenticar";
@@ -24,3 +25,10 @@ doadorRoutes.post("/:id/formulario", FormularioController.enviar);
 
 // RN-004: antes de marcar uma doação, confere se a pessoa passou no formulário e se ele ainda vale.
 doadorRoutes.get("/:id/agendamento/verificacao", FormularioController.verificarAgendamento);
+
+// HU-04 e HU-06: os agendamentos de doação do próprio doador (pela linha do RNF-002 acima).
+// "proximo" vem antes de "/:agendamentoId" para não ser tomado por um id.
+doadorRoutes.get("/:id/agendamentos", AgendamentoController.listar);
+doadorRoutes.get("/:id/agendamentos/proximo", AgendamentoController.proximo);
+doadorRoutes.post("/:id/agendamentos", AgendamentoController.agendar);
+doadorRoutes.delete("/:id/agendamentos/:agendamentoId", AgendamentoController.cancelar);

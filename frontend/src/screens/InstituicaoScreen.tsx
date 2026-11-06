@@ -14,8 +14,9 @@ import { formatarDataBr } from "../validation/campos";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Instituicao">;
 
-// HU-05, cenário 2: informações completas da instituição. O botão "Agendar Doação" entra junto com a HU-04.
-export function InstituicaoScreen({ route }: Props) {
+// HU-05, cenário 2: informações completas da instituição e o botão "Agendar doação" (HU-04),
+// que abre o formulário de agendamento com esta instituição já escolhida.
+export function InstituicaoScreen({ navigation, route }: Props) {
   const { instituicao } = route.params;
   const { nome, endereco, telefone, horario, latitude, longitude, distanciaKm, tiposEmFalta, estoqueAtualizadoEm, demonstracao } = instituicao;
   const [erro, setErro] = useState<string | null>(null);
@@ -55,7 +56,12 @@ export function InstituicaoScreen({ route }: Props) {
 
       <View style={estilos.botoes}>
         <Botao
+          titulo="Agendar doação"
+          aoPressionar={() => navigation.popTo("Abas", { screen: "Agendar", params: { instituicaoId: instituicao.id } })}
+        />
+        <Botao
           titulo="Como chegar"
+          variante="secundario"
           aoPressionar={() =>
             abrir(
               `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`,

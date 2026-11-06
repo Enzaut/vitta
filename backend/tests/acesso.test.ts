@@ -37,6 +37,11 @@ describe("RNF-002: o token de A não abre os dados de B", () => {
     { nome: "excluir a conta", metodo: "delete", caminho: (id) => `/doadores/${id}` },
     { nome: "ver o formulário", metodo: "get", caminho: (id) => `/doadores/${id}/formulario` },
     { nome: "enviar o formulário", metodo: "post", caminho: (id) => `/doadores/${id}/formulario`, corpo: { qualquer: "coisa" } },
+    { nome: "conferir se pode agendar", metodo: "get", caminho: (id) => `/doadores/${id}/agendamento/verificacao` },
+    { nome: "listar os agendamentos", metodo: "get", caminho: (id) => `/doadores/${id}/agendamentos` },
+    { nome: "ver o próximo agendamento", metodo: "get", caminho: (id) => `/doadores/${id}/agendamentos/proximo` },
+    { nome: "agendar uma doação", metodo: "post", caminho: (id) => `/doadores/${id}/agendamentos`, corpo: { qualquer: "coisa" } },
+    { nome: "cancelar um agendamento", metodo: "delete", caminho: (id) => `/doadores/${id}/agendamentos/${randomUUID()}` },
   ];
 
   it.each(rotas)("A tenta $nome de B: 403, e nada de B muda", async ({ metodo, caminho, corpo }) => {
@@ -88,6 +93,9 @@ describe("RNF-002: o token de A não abre os dados de B", () => {
     expect((await request(app).patch(`/doadores/${b.doador.id}`).send({ telefone: "61999998888" })).status).toBe(401);
     expect((await request(app).delete(`/doadores/${b.doador.id}`)).status).toBe(401);
     expect((await request(app).get(`/doadores/${b.doador.id}/formulario`)).status).toBe(401);
+    expect((await request(app).get(`/doadores/${b.doador.id}/agendamentos`)).status).toBe(401);
+    expect((await request(app).post(`/doadores/${b.doador.id}/agendamentos`).send({})).status).toBe(401);
+    expect((await request(app).delete(`/doadores/${b.doador.id}/agendamentos/${randomUUID()}`)).status).toBe(401);
   });
 });
 

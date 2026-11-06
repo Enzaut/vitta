@@ -24,14 +24,17 @@ Duas observações:
 | Cadastro e login (HU-01) | Conta com e-mail e senha, login com token (JWT) e bloqueio depois de 5 erros de senha |
 | Excluir conta (HU-02) | Apaga a conta e todos os dados |
 | Formulário de elegibilidade (HU-03) | Perguntas rápidas sobre saúde (Portaria GM/MS 11.685/2026). A resposta é positiva (passou) ou negativa (não passou). Quem passou fica com o formulário válido por 7 dias e pode agendar; quem não passou espera 3 dias para responder de novo. Antes de cada agendamento, o app confere se a pessoa passou e se o formulário ainda vale |
-| Mapa com instituições (HU-05) | Instituições de coleta perto da pessoa, raio de busca, busca por nome, detalhes e tipos de sangue em falta (sem o botão de agendar, que vem com a HU-04) |
+| Mapa com instituições (HU-05) | Instituições de coleta perto da pessoa, raio de busca, busca por nome, detalhes, tipos de sangue em falta e o botão "Agendar doação" |
+| Agendar doação (HU-04) | Aba "Agendar": escolhe a instituição, o dia, o médico e o horário (os livres podem ser escolhidos, os ocupados aparecem apagados), confirma o tipo sanguíneo e agenda. Só agenda quem passou no formulário e ainda está na validade; um agendamento por vez; dá para cancelar. Os médicos e os horários são inventados |
 | Perfil (HU-11) | Telefone e tipo sanguíneo |
 | Controle de acesso (RNF-002) | Cada doador só enxerga e altera os próprios dados |
 | Localização (RNF-008) | Pede permissão, avisa quando o GPS está desligado e mantém a busca por nome |
 
-Ainda não existem: agendamento (HU-04; a conferência do formulário que vem antes dele já está pronta na API, em `GET /doadores/me/agendamento/verificacao`), histórico, notificações e pontos/recompensas.
+Ainda não existem: a tela de histórico de agendamentos (a API já lista), notificações e pontos/recompensas.
 
 As instituições do mapa são 1 real (Hemocentro de Brasília) e 7 de demonstração, que são fictícias e aparecem marcadas assim no app.
+
+**Médicos e horários inventados.** Pelo documento de requisitos (RN-005), quem guarda a agenda é a instituição e o VITTA só envia o pedido. Como ainda não há integração com nenhuma instituição, a pasta `backend/src/agenda` faz o papel dela: inventa os médicos (`medicosSimulados.ts`), os dias e turnos de atendimento e os horários, e deixa mais ou menos metade deles ocupada (o resultado é sempre o mesmo para o mesmo horário). Os horários vão de hoje até 13 dias à frente, a cada 30 minutos, e só aparecem os que começam daqui a pelo menos 2 horas. Para ligar uma instituição de verdade, basta trocar esse módulo por uma chamada à API dela.
 
 ## Banco de dados
 
@@ -42,6 +45,7 @@ O banco é PostgreSQL e está publicado na Render. A imagem mostra as tabelas vi
 - `doadores`: as contas. A senha nunca é guardada, só o hash (bcrypt).
 - `formularios_elegibilidade`: o último formulário respondido por cada doador.
 - `instituicoes`: as instituições do mapa.
+- `agendamentos`: as doações agendadas (instituição, médico, horário, tipo sanguíneo e status Agendado ou Cancelado). Os médicos e os horários livres e ocupados não ficam no banco: vêm da agenda inventada.
 - `_prisma_migrations`: o histórico das alterações do banco. As tabelas `pg_stat_*` são da própria Render.
 
 ## Tecnologias
@@ -49,7 +53,7 @@ O banco é PostgreSQL e está publicado na Render. A imagem mostra as tabelas vi
 - **Aplicativo** (`frontend/`): Expo SDK 58, React Native 0.88, TypeScript, React Navigation.
 - **API** (`backend/`): Node 22, Express 5, TypeScript, Prisma 7, PostgreSQL 16, Zod, JWT.
 - **Infraestrutura**: Docker e Docker Compose; publicação na Render.
-- **Testes**: Vitest e Supertest (414 testes automáticos).
+- **Testes**: Vitest e Supertest (497 testes automáticos).
 
 ```
 vitta/
@@ -79,7 +83,7 @@ Para rodar API e banco juntos em containers: `docker compose up --build` (a API 
 
 ## Testes
 
-Em `backend/`, rode `npm test`. São 414 testes, com banco de dados de verdade, cobrindo cadastro, login, controle de acesso, formulário de elegibilidade (inclusive a espera de 3 dias, a validade de 7 dias e a conferência antes de agendar), mapa e CORS.
+Em `backend/`, rode `npm test`. São 497 testes, com banco de dados de verdade, cobrindo cadastro, login, controle de acesso, formulário de elegibilidade (inclusive a espera de 3 dias, a validade de 7 dias e a conferência antes de agendar), mapa, CORS e o agendamento (agenda de horários, reserva, horário ocupado, pedidos ao mesmo tempo, instituição fora do ar e cancelamento).
 
 ## Publicação na internet
 

@@ -44,6 +44,9 @@ model Doador {
   // HU-03: o formulário de análise mais recente (apagado junto com a conta).
   formulario FormularioElegibilidade?
 
+  // HU-04: os agendamentos de doação (apagados junto com a conta, RN-012).
+  agendamentos Agendamento[]
+
   @@map("doadores")
 }
 
@@ -78,6 +81,9 @@ model Instituicao {
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
+
+  // HU-04: os agendamentos feitos nesta instituição (somem junto com ela, para o seed das instituições de demonstração nunca travar).
+  agendamentos Agendamento[]
 
   @@map("instituicoes")
 }
@@ -117,4 +123,55 @@ model FormularioElegibilidade {
   respostas    Json
 
   @@map("formularios_elegibilidade")
+}
+
+// Situação de um agendamento de doação (HU-04 e HU-06, RN-006).
+// Hoje só nascem AGENDADO e CANCELADO; FINALIZADO é da HU-06/HU-07 (quando a instituição confirmar a doação).
+enum StatusAgendamento {
+  AGENDADO
+  FINALIZADO
+  CANCELADO
+}
+
+// Agendamento de doação de sangue (HU-04). Cada doador tem no máximo um agendamento AGENDADO por vez.
+//
+// RN-005: quem guarda a agenda é a instituição; o VITTA só envia o pedido e registra o resultado. Por enquanto a
+// "instituição" é uma simulação (src/agenda): os médicos e os horários livres e ocupados são inventados.
+// Por isso o médico não é uma tabela: guardamos o nome e a especialidade como foram mostrados no momento do pedido.
+model Agendamento {
+  id String @id @default(uuid())
+
+  doadorId String
+  doador   Doador @relation(fields: [doadorId], references: [id], onDelete: Cascade)
+
+  instituicaoId String
+  instituicao   Instituicao @relation(fields: [instituicaoId], references: [id], onDelete: Cascade)
+
+  // Quem atende. "medicoCodigo" é o identificador do médico no sistema da instituição.
+  medicoCodigo        String
+  medicoNome          String
+  medicoEspecialidade String
+
+  // Quando começa a consulta de doação e quanto ela dura (o horário vale em Brasília, mas fica guardado em UTC).
+  inicio     DateTime
+  duracaoMin Int
+
+  // O tipo sanguíneo confirmado na hora de agendar (se a pessoa mudou, o perfil também muda).
+  tipoSanguineo TipoSanguineo
+
+  status StatusAgendamento @default(AGENDADO)
+
+  // Código que a instituição devolveu ao receber o pedido (RN-005).
+  protocolo String
+
+  // "instituição|médico|horário" enquanto o agendamento está AGENDADO; vazio depois de cancelado.
+  // Como a chave é única, o banco impede dois agendamentos no mesmo horário do mesmo médico,
+  // mesmo que dois pedidos cheguem ao mesmo tempo.
+  reservaDoHorario String? @unique
+
+  criadoEm    DateTime  @default(now())
+  canceladoEm DateTime?
+
+  @@index([doadorId, inicio])
+  @@map("agendamentos")
 }

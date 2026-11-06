@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState } from "react-native";
+import { apiAgenda, type Agenda, type Agendamento, type PedidoDeAgendamento, type RespostaDoAgendamento } from "../api/agenda";
 import { api, type AlteracaoPerfil, type DadosCadastro, type Doador } from "../api/auth";
 import { ApiError, configurarSessaoExpirada } from "../api/client";
 import { apiFormulario, type Formulario, type Modelo, type Respostas, type VerificacaoDeAgendamento } from "../api/formulario";
@@ -30,6 +31,15 @@ type Contexto = {
   enviarFormulario(respostas: Respostas): Promise<Formulario>;
   // RN-004: antes de marcar uma doação (HU-04), pergunta à API, a cada vez, se a pessoa passou no formulário e se ele ainda vale.
   verificarAgendamento(): Promise<VerificacaoDeAgendamento>;
+  // HU-04: a doação agendada que ainda vai acontecer. undefined = ainda carregando (ou sem conexão); null = não tem.
+  proximoAgendamento: Agendamento | null | undefined;
+  carregarAgendamento(): Promise<void>;
+  // Médicos e horários (livres e ocupados) de uma instituição.
+  buscarAgenda(instituicaoId: string): Promise<Agenda>;
+  // Reserva o horário. Quem confirma outro tipo sanguíneo também atualiza o perfil.
+  agendar(pedido: PedidoDeAgendamento): Promise<RespostaDoAgendamento>;
+  // Cancela o agendamento (HU-06, cenário 3) e devolve a mensagem de confirmação.
+  cancelarAgendamento(id: string): Promise<string>;
   // HU-05: instituições de coleta (com a localização, só as que estão dentro do raio).
   listarInstituicoes(filtro: FiltroInstituicoes): Promise<ListaDeInstituicoes>;
 };
@@ -41,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [doador, setDoador] = useState<Doador | null>(null);
   const [aviso, setAviso] = useState<AvisoGlobal | null>(null);
   const [formulario, setFormulario] = useState<Formulario | null | undefined>(undefined);
+  const [proximoAgendamento, setProximoAgendamento] = useState<Agendamento | null | undefined>(undefined);
   const [irParaFormulario, setIrParaFormulario] = useState(false);
   // O token fica só aqui (e no armazenamento seguro), nunca em estado de tela.
   const tokenRef = useRef<string | null>(null);
@@ -57,13 +68,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // A validade (7 dias) e a espera (3 dias) passam com o app em segundo plano: ao voltar para ele, confere o formulário de novo.
+  // HU-04: busca a doação agendada que ainda vai acontecer. Sem conexão, mantém o que já tinha.
+  const carregarAgendamento = useCallback(async () => {
+    const token = tokenRef.current;
+    if (!token) return;
+    try {
+      const { agendamento } = await apiAgenda.proximo(token);
+      setProximoAgendamento(agendamento);
+    } catch {
+      // segue com o que tinha; as telas tentam de novo quando voltam a aparecer
+    }
+  }, []);
+
+  // A validade (7 dias) e a espera (3 dias) passam com o app em segundo plano, e o horário agendado também chega:
+  // ao voltar para o app, confere o formulário e o agendamento de novo.
   useEffect(() => {
     const assinatura = AppState.addEventListener("change", (estado) => {
-      if (estado === "active") void carregarFormulario();
+      if (estado === "active") {
+        void carregarFormulario();
+        void carregarAgendamento();
+      }
     });
     return () => assinatura.remove();
-  }, [carregarFormulario]);
+  }, [carregarFormulario, carregarAgendamento]);
 
   // A API recusou o nosso token (venceu ou a conta não existe mais): volta para a tela inicial.
   useEffect(() => {
@@ -72,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       void apagarToken();
       setDoador(null);
       setFormulario(undefined);
+      setProximoAgendamento(undefined);
       setIrParaFormulario(false);
       setAviso({ tipo: "erro", texto: "Sua sessão expirou. Faça login novamente." });
     });
@@ -90,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (ativo) {
             setDoador(atual);
             void carregarFormulario();
+            void carregarAgendamento();
           }
         } catch (erro) {
           if (erro instanceof ApiError && erro.status === 401) await apagarToken();
@@ -101,18 +130,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       ativo = false;
     };
-  }, [carregarFormulario]);
+  }, [carregarFormulario, carregarAgendamento]);
 
-  // contaNova: quem acabou de se cadastrar ainda não tem formulário, então nem precisa perguntar à API.
+  // contaNova: quem acabou de se cadastrar ainda não tem formulário nem agendamento, então nem precisa perguntar à API.
   const iniciarSessao = useCallback(
     async (token: string, atual: Doador, contaNova = false) => {
       await salvarToken(token);
       tokenRef.current = token;
       setDoador(atual);
-      if (contaNova) setFormulario(null);
-      else void carregarFormulario();
+      if (contaNova) {
+        setFormulario(null);
+        setProximoAgendamento(null);
+      } else {
+        void carregarFormulario();
+        void carregarAgendamento();
+      }
     },
-    [carregarFormulario],
+    [carregarFormulario, carregarAgendamento],
   );
 
   const cadastrar = useCallback(
@@ -143,6 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     tokenRef.current = null;
     setAviso(null);
     setFormulario(undefined);
+    setProximoAgendamento(undefined);
     setIrParaFormulario(false);
     setDoador(null);
   }, []);
@@ -164,6 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     tokenRef.current = null;
     setAviso({ tipo: "sucesso", texto: "Sua conta e todos os dados associados foram removidos com sucesso." });
     setFormulario(undefined);
+    setProximoAgendamento(undefined);
     setIrParaFormulario(false);
     setDoador(null);
   }, []);
@@ -196,6 +232,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return apiFormulario.verificarAgendamento(token);
   }, []);
 
+  const buscarAgenda = useCallback(async (instituicaoId: string) => {
+    const token = tokenRef.current;
+    if (!token) throw new ApiError(401, "Sessão inválida ou expirada. Faça login novamente.");
+    return apiAgenda.agenda(token, instituicaoId);
+  }, []);
+
+  const agendar = useCallback(async (pedido: PedidoDeAgendamento) => {
+    const token = tokenRef.current;
+    if (!token) throw new ApiError(401, "Sessão inválida ou expirada. Faça login novamente.");
+    const resposta = await apiAgenda.agendar(token, pedido);
+    setProximoAgendamento(resposta.agendamento);
+    // Quem confirmou outro tipo sanguíneo ao agendar também atualizou o perfil na API.
+    setDoador((atual) => (atual ? { ...atual, tipoSanguineo: resposta.agendamento.tipoSanguineo } : atual));
+    return resposta;
+  }, []);
+
+  const cancelarAgendamento = useCallback(async (id: string) => {
+    const token = tokenRef.current;
+    if (!token) throw new ApiError(401, "Sessão inválida ou expirada. Faça login novamente.");
+    const { mensagem } = await apiAgenda.cancelar(token, id);
+    setProximoAgendamento(null);
+    return mensagem;
+  }, []);
+
   const listarInstituicoes = useCallback(async (filtro: FiltroInstituicoes) => {
     const token = tokenRef.current;
     if (!token) throw new ApiError(401, "Sessão inválida ou expirada. Faça login novamente.");
@@ -220,6 +280,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       buscarModeloDoFormulario,
       enviarFormulario,
       verificarAgendamento,
+      proximoAgendamento,
+      carregarAgendamento,
+      buscarAgenda,
+      agendar,
+      cancelarAgendamento,
       listarInstituicoes,
     }),
     [
@@ -239,6 +304,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       buscarModeloDoFormulario,
       enviarFormulario,
       verificarAgendamento,
+      proximoAgendamento,
+      carregarAgendamento,
+      buscarAgenda,
+      agendar,
+      cancelarAgendamento,
       listarInstituicoes,
     ],
   );
