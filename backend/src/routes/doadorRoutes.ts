@@ -2,6 +2,7 @@ import { Router } from "express";
 import { AgendamentoController } from "../controllers/AgendamentoController";
 import { DoadorController } from "../controllers/DoadorController";
 import { FormularioController } from "../controllers/FormularioController";
+import { GamificacaoController } from "../controllers/GamificacaoController";
 import { autenticar } from "../middlewares/autenticar";
 import { somenteProprioDoador } from "../middlewares/somenteProprioDoador";
 
@@ -32,3 +33,8 @@ doadorRoutes.get("/:id/agendamentos", AgendamentoController.listar);
 doadorRoutes.get("/:id/agendamentos/proximo", AgendamentoController.proximo);
 doadorRoutes.post("/:id/agendamentos", AgendamentoController.agendar);
 doadorRoutes.delete("/:id/agendamentos/:agendamentoId", AgendamentoController.cancelar);
+// RN-007: a instituição confirma a doação (simulada: só vale enquanto a instituição for de mentira).
+doadorRoutes.post("/:id/agendamentos/:agendamentoId/simular-doacao", AgendamentoController.simularDoacao);
+
+// RN-007 e RN-008: pontos e patente do doador.
+doadorRoutes.get("/:id/gamificacao", GamificacaoController.resumo);

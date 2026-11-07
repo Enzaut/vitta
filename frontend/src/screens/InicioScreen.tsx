@@ -10,6 +10,7 @@ import { Aviso } from "../components/Aviso";
 import { Botao } from "../components/Botao";
 import { Tela } from "../components/Tela";
 import { aindaEmEspera, aparenciaDo } from "../formulario/aparencia";
+import { ResumoDePontos } from "../gamificacao/ResumoDePontos";
 import type { AbaProps } from "../navigation/types";
 import { cores, fontes, raio, tamanhos } from "../theme";
 import { formatarDataBr, primeiroNome } from "../validation/campos";
@@ -25,6 +26,7 @@ export function InicioScreen({ navigation }: Props) {
     formulario,
     carregarFormulario,
     proximoAgendamento,
+    gamificacao,
     carregarAgendamento,
     irParaFormulario,
     concluirRedirecionamento,
@@ -98,6 +100,14 @@ export function InicioScreen({ navigation }: Props) {
             <Botao titulo="Agendar doação" aoPressionar={() => navigation.navigate("Agendar")} />
           </>
         )}
+      </View>
+
+      {/* RN-007 e RN-008: pontos e patente de quem doa (a doação conta quando a instituição confirma). */}
+      <View style={estilos.cartao}>
+        <Ionicons name="trophy-outline" size={28} color={cores.primaria} />
+        <Text style={estilos.cartaoTitulo}>Seus pontos e sua patente</Text>
+        {gamificacao ? <ResumoDePontos resumo={gamificacao} /> : <Text style={estilos.cartaoTexto}>Carregando os seus pontos…</Text>}
+        <Botao titulo="Ver histórico de agendamentos" variante="secundario" aoPressionar={() => navigation.navigate("HistoricoDeAgendamentos")} />
       </View>
 
       <View style={estilos.botoes}>

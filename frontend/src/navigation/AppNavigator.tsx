@@ -8,8 +8,10 @@ import { ApresentacaoScreen } from "../screens/ApresentacaoScreen";
 import { BoasVindasScreen } from "../screens/BoasVindasScreen";
 import { CadastroScreen } from "../screens/CadastroScreen";
 import { DadosScreen } from "../screens/DadosScreen";
+import { DetalhesDaDoacaoScreen } from "../screens/DetalhesDaDoacaoScreen";
 import { FormularioIntroScreen } from "../screens/FormularioIntroScreen";
 import { FormularioScreen } from "../screens/FormularioScreen";
+import { HistoricoDeAgendamentosScreen } from "../screens/HistoricoDeAgendamentosScreen";
 import { InstituicaoScreen } from "../screens/InstituicaoScreen";
 import { LoginScreen } from "../screens/LoginScreen";
 import { PrivacidadeScreen } from "../screens/PrivacidadeScreen";
@@ -53,6 +55,8 @@ export function AppNavigator() {
           <>
             <Stack.Screen name="Abas" component={AbasNavigator} options={{ headerShown: false }} />
             <Stack.Screen name="Instituicao" component={InstituicaoScreen} options={{ title: "Instituição" }} />
+            <Stack.Screen name="HistoricoDeAgendamentos" component={HistoricoDeAgendamentosScreen} options={{ title: "Histórico de agendamentos" }} />
+            <Stack.Screen name="DetalhesDaDoacao" component={DetalhesDaDoacaoScreen} options={{ title: "Detalhes da doação" }} />
             <Stack.Screen name="Apresentacao" component={ApresentacaoScreen} options={{ headerShown: false, animation: "slide_from_bottom" }} />
             <Stack.Screen name="Dados" component={DadosScreen} options={{ title: "Meus dados" }} />
             <Stack.Screen name="Privacidade" component={PrivacidadeScreen} options={{ title: "Privacidade e Dados" }} />

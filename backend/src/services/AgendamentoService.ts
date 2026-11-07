@@ -16,7 +16,9 @@ import { agora } from "../utils/relogio";
 import type { StatusAgendamento } from "../../generated/prisma/enums";
 import { MSG_HORARIO_INVALIDO, MSG_INSTITUICAO_INVALIDA, agendarSchema } from "../validators/agendamentoValidator";
 import { validar } from "../validators/authValidator";
+import { PONTOS_POR_DOACAO, calcularProgresso } from "../gamificacao/regras";
 import { FormularioService } from "./FormularioService";
+import { resumoParaDoacoes, type ResumoDeGamificacao } from "./GamificacaoService";
 
 // Mensagens da HU-04 (agendar) e da HU-06 (cancelar).
 export const MSG_HORARIO_INDISPONIVEL = "Este horário não está mais disponível. Escolha outro horário."; // Caso de Uso, exceção E01
@@ -28,6 +30,10 @@ export const MSG_CANCELAMENTO_FALHOU =
 export const MSG_CANCELADO = "Agendamento cancelado com sucesso.";
 export const MSG_NAO_CANCELAVEL = "Só é possível cancelar agendamentos com status Agendado."; // RN-006
 export const MSG_JA_PASSOU = "Este horário já passou e o agendamento não pode mais ser cancelado.";
+// Confirmação da doação (RN-007): quem confirma é a instituição; aqui ela é simulada.
+export const MSG_DOACAO_JA_CONFIRMADA = "Esta doação já foi confirmada.";
+export const MSG_NAO_CONFIRMAVEL = "Só é possível confirmar doações de agendamentos com status Agendado.";
+export const MSG_SO_A_INSTITUICAO = "A confirmação da doação vem da instituição.";
 
 // O que a API devolve sobre um agendamento.
 export type AgendamentoResposta = {
@@ -47,6 +53,19 @@ export type AgendamentoResposta = {
   protocolo: string;
   criadoEm: string;
   canceladoEm: string | null;
+  // Só em doação confirmada (status Finalizado): quando a instituição confirmou e quantos pontos deu (RN-007).
+  finalizadoEm: string | null;
+  pontosGanhos: number | null;
+  // true = a instituição é simulada: a confirmação da doação pode ser simulada pelo próprio app (só na demonstração).
+  simulado: boolean;
+};
+
+// O que a API devolve ao confirmar uma doação.
+export type RespostaDaDoacao = {
+  agendamento: AgendamentoResposta;
+  mensagem: string;
+  gamificacao: ResumoDeGamificacao;
+  subiuDePatente: boolean;
 };
 
 export type AgendaResposta = {
@@ -79,6 +98,9 @@ function paraResposta(a: AgendamentoComInstituicao): AgendamentoResposta {
     protocolo: a.protocolo,
     criadoEm: a.criadoEm.toISOString(),
     canceladoEm: a.canceladoEm?.toISOString() ?? null,
+    finalizadoEm: a.finalizadoEm?.toISOString() ?? null,
+    pontosGanhos: a.pontosGanhos,
+    simulado: agenda().simulado,
   };
 }
 
@@ -208,5 +230,34 @@ export const AgendamentoService = {
     const cancelado = await AgendamentoRepository.cancelar(agendamento.id, momento);
     if (!cancelado) throw new AppError(409, MSG_NAO_CANCELAVEL);
     return { agendamento: paraResposta(cancelado), mensagem: MSG_CANCELADO };
+  },
+
+  // RN-007 e RN-008: a instituição confirma que a doação aconteceu. O agendamento vira Finalizado, a pessoa ganha pontos
+  // e pode subir de patente. Quem confirma é a instituição (numa integração real, ela chamaria o VITTA); por enquanto a
+  // instituição é simulada e o app tem um botão de demonstração que faz esse papel. Com uma instituição de verdade,
+  // esta rota deixa de valer para o doador (403).
+  async simularDoacao(doadorId: string, agendamentoId: string): Promise<RespostaDaDoacao> {
+    if (!agenda().simulado) throw new AppError(403, MSG_SO_A_INSTITUICAO);
+
+    const agendamento = await AgendamentoRepository.buscarDoDoador(agendamentoId, doadorId);
+    if (!agendamento) throw new AppError(404, "Agendamento não encontrado.");
+    if (agendamento.status === "FINALIZADO") throw new AppError(409, MSG_DOACAO_JA_CONFIRMADA);
+    if (agendamento.status !== "AGENDADO") throw new AppError(409, MSG_NAO_CONFIRMAVEL);
+
+    const finalizado = await AgendamentoRepository.finalizar(agendamento.id, agora(), PONTOS_POR_DOACAO);
+    // Outro pedido confirmou ou cancelou no mesmo instante: os pontos só são dados uma vez.
+    if (!finalizado) throw new AppError(409, MSG_DOACAO_JA_CONFIRMADA);
+
+    const { doacoes, pontos } = await AgendamentoRepository.totaisDeDoacoes(doadorId);
+    const gamificacao = resumoParaDoacoes(doacoes, pontos);
+    const subiuDePatente = gamificacao.patente.nivel > calcularProgresso(doacoes - 1).patente.nivel;
+    return {
+      agendamento: paraResposta(finalizado),
+      mensagem:
+        `Doação confirmada! Você ganhou ${PONTOS_POR_DOACAO} pontos.` +
+        (subiuDePatente ? ` Parabéns, você subiu para a patente ${gamificacao.patente.nome}!` : ""),
+      gamificacao,
+      subiuDePatente,
+    };
   },
 };

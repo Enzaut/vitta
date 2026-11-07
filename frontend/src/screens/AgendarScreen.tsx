@@ -46,7 +46,17 @@ const slotLivre = (agenda: Agenda, selecao: Selecao) =>
 // HU-04: formulário de agendamento (aba "Agendar"): instituição, data e hora (com o médico) e tipo sanguíneo.
 // Antes de tudo a tela pergunta à API se a pessoa pode agendar (RN-004, cenário 2); a API confere de novo ao reservar.
 export function AgendarScreen({ navigation, route }: Props) {
-  const { doador, verificarAgendamento, proximoAgendamento, carregarAgendamento, listarInstituicoes, buscarAgenda, agendar, cancelarAgendamento } = useAuth();
+  const {
+    doador,
+    verificarAgendamento,
+    proximoAgendamento,
+    carregarAgendamento,
+    listarInstituicoes,
+    buscarAgenda,
+    agendar,
+    cancelarAgendamento,
+    simularDoacao,
+  } = useAuth();
 
   // Nulo = ainda conferindo (só na primeira vez; depois a conferência se atualiza sem piscar a tela).
   const [conferencia, setConferencia] = useState<Conferencia | null>(null);
@@ -64,6 +74,7 @@ export function AgendarScreen({ navigation, route }: Props) {
   const [sucesso, setSucesso] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [cancelando, setCancelando] = useState(false);
+  const [simulando, setSimulando] = useState(false);
   // Muda quando aparece uma mensagem de sucesso ou de erro, para a tela voltar ao topo.
   const [chaveRolagem, setChaveRolagem] = useState(0);
 
@@ -222,6 +233,23 @@ export function AgendarScreen({ navigation, route }: Props) {
     }
   }
 
+  // RN-007 (só na demonstração): faz o papel da instituição confirmando a doação; a pessoa ganha pontos e pode subir de patente.
+  async function simular() {
+    if (!proximoAgendamento) return;
+    setErroGeral(null);
+    setSucesso(null);
+    setSimulando(true);
+    try {
+      setSucesso((await simularDoacao(proximoAgendamento.id)).mensagem);
+    } catch (erro) {
+      setErroGeral(erro instanceof ApiError ? (erro.status === 0 ? MSG_SEM_CONEXAO : erro.message) : "Não foi possível confirmar a doação. Tente novamente.");
+      void carregarAgendamento();
+    } finally {
+      setSimulando(false);
+      irParaOTopo();
+    }
+  }
+
   const detalhes = agenda && selecao ? detalhesDaSelecao(agenda, selecao) : null;
   const instituicaoEscolhida = instituicoes?.find((i) => i.id === instituicaoId) ?? null;
 
@@ -229,6 +257,9 @@ export function AgendarScreen({ navigation, route }: Props) {
     <Tela chaveRolagem={chaveRolagem}>
       <Text style={estilos.titulo}>Agendar doação</Text>
       <Text style={estilos.subtitulo}>Escolha a instituição, o dia, o médico e o horário.</Text>
+      <View style={estilos.atalho}>
+        <Botao titulo="Histórico de agendamentos" variante="secundario" aoPressionar={() => navigation.navigate("HistoricoDeAgendamentos")} />
+      </View>
 
       {sucesso && <Aviso tipo="sucesso" texto={sucesso} aoFechar={() => setSucesso(null)} />}
       {erroGeral && <Aviso tipo="erro" texto={erroGeral} aoFechar={() => setErroGeral(null)} />}
@@ -264,7 +295,12 @@ export function AgendarScreen({ navigation, route }: Props) {
       {liberado && proximoAgendamento && (
         <View style={estilos.bloco}>
           <Text style={estilos.secao}>Sua doação agendada</Text>
-          <CartaoDoAgendamento agendamento={proximoAgendamento} aoCancelar={() => void cancelar()} cancelando={cancelando} />
+          <CartaoDoAgendamento
+            agendamento={proximoAgendamento}
+            aoCancelar={() => void cancelar()}
+            aoSimularDoacao={() => void simular()}
+            ocupado={cancelando || simulando}
+          />
           <Text style={estilos.nota}>Dá para ter uma doação agendada por vez. Para marcar outra, cancele esta antes.</Text>
         </View>
       )}
@@ -359,7 +395,8 @@ export function AgendarScreen({ navigation, route }: Props) {
 
 const estilos = StyleSheet.create({
   titulo: { fontFamily: fontes.titulo, fontSize: tamanhos.subtitulo + 2, color: cores.texto },
-  subtitulo: { fontFamily: fontes.texto, fontSize: tamanhos.texto, color: cores.textoSecundario, marginTop: 4, marginBottom: 20 },
+  subtitulo: { fontFamily: fontes.texto, fontSize: tamanhos.texto, color: cores.textoSecundario, marginTop: 4, marginBottom: 16 },
+  atalho: { marginBottom: 20 },
   carregando: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 20 },
   carregandoTexto: { fontFamily: fontes.texto, fontSize: tamanhos.texto, color: cores.textoSecundario },
   bloco: { gap: 12, marginBottom: 8 },

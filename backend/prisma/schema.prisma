@@ -126,7 +126,8 @@ model FormularioElegibilidade {
 }
 
 // Situação de um agendamento de doação (HU-04 e HU-06, RN-006).
-// Hoje só nascem AGENDADO e CANCELADO; FINALIZADO é da HU-06/HU-07 (quando a instituição confirmar a doação).
+// AGENDADO vira FINALIZADO quando a instituição confirma a doação (e a pessoa ganha pontos, RN-007)
+// ou CANCELADO quando a pessoa cancela antes do horário.
 enum StatusAgendamento {
   AGENDADO
   FINALIZADO
@@ -168,6 +169,11 @@ model Agendamento {
   // Como a chave é única, o banco impede dois agendamentos no mesmo horário do mesmo médico,
   // mesmo que dois pedidos cheguem ao mesmo tempo.
   reservaDoHorario String? @unique
+
+  // RN-007: quando a instituição confirmou que a doação aconteceu (status FINALIZADO) e quantos pontos ela deu.
+  // Um agendamento FINALIZADO continua com a chave de reserva: o horário usado não volta a ficar livre.
+  finalizadoEm DateTime?
+  pontosGanhos Int?
 
   criadoEm    DateTime  @default(now())
   canceladoEm DateTime?

@@ -1,9 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppState } from "react-native";
-import { apiAgenda, type Agenda, type Agendamento, type PedidoDeAgendamento, type RespostaDoAgendamento } from "../api/agenda";
+import {
+  apiAgenda,
+  type Agenda,
+  type Agendamento,
+  type PedidoDeAgendamento,
+  type RespostaDaDoacao,
+  type RespostaDoAgendamento,
+} from "../api/agenda";
 import { api, type AlteracaoPerfil, type DadosCadastro, type Doador } from "../api/auth";
 import { ApiError, configurarSessaoExpirada } from "../api/client";
 import { apiFormulario, type Formulario, type Modelo, type Respostas, type VerificacaoDeAgendamento } from "../api/formulario";
+import { apiGamificacao, type ResumoDeGamificacao } from "../api/gamificacao";
 import { apiInstituicoes, type FiltroInstituicoes, type ListaDeInstituicoes } from "../api/instituicoes";
 import { apagarToken, lerToken, salvarToken } from "../storage/tokenStorage";
 import { primeiroNome } from "../validation/campos";
@@ -33,7 +41,14 @@ type Contexto = {
   verificarAgendamento(): Promise<VerificacaoDeAgendamento>;
   // HU-04: a doação agendada que ainda vai acontecer. undefined = ainda carregando (ou sem conexão); null = não tem.
   proximoAgendamento: Agendamento | null | undefined;
+  // RN-007 e RN-008: pontos e patente. undefined = ainda carregando (ou sem conexão).
+  gamificacao: ResumoDeGamificacao | undefined;
+  // Atualiza a doação agendada e os pontos (os dois mudam juntos quando uma doação é confirmada).
   carregarAgendamento(): Promise<void>;
+  // HU-06: todos os agendamentos do doador, do mais recente para o mais antigo.
+  listarAgendamentos(): Promise<Agendamento[]>;
+  // Só na demonstração: faz o papel da instituição confirmando que a doação aconteceu (RN-007).
+  simularDoacao(id: string): Promise<RespostaDaDoacao>;
   // Médicos e horários (livres e ocupados) de uma instituição.
   buscarAgenda(instituicaoId: string): Promise<Agenda>;
   // Reserva o horário. Quem confirma outro tipo sanguíneo também atualiza o perfil.
@@ -52,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [aviso, setAviso] = useState<AvisoGlobal | null>(null);
   const [formulario, setFormulario] = useState<Formulario | null | undefined>(undefined);
   const [proximoAgendamento, setProximoAgendamento] = useState<Agendamento | null | undefined>(undefined);
+  const [gamificacao, setGamificacao] = useState<ResumoDeGamificacao | undefined>(undefined);
   const [irParaFormulario, setIrParaFormulario] = useState(false);
   // O token fica só aqui (e no armazenamento seguro), nunca em estado de tela.
   const tokenRef = useRef<string | null>(null);
@@ -68,16 +84,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // HU-04: busca a doação agendada que ainda vai acontecer. Sem conexão, mantém o que já tinha.
+  // HU-04: busca a doação agendada que ainda vai acontecer e, junto, os pontos e a patente (RN-007 e RN-008).
+  // Sem conexão, mantém o que já tinha.
   const carregarAgendamento = useCallback(async () => {
     const token = tokenRef.current;
     if (!token) return;
-    try {
-      const { agendamento } = await apiAgenda.proximo(token);
-      setProximoAgendamento(agendamento);
-    } catch {
-      // segue com o que tinha; as telas tentam de novo quando voltam a aparecer
-    }
+    await Promise.all([
+      apiAgenda
+        .proximo(token)
+        .then(({ agendamento }) => setProximoAgendamento(agendamento))
+        .catch(() => undefined),
+      apiGamificacao
+        .resumo(token)
+        .then(({ gamificacao: resumo }) => setGamificacao(resumo))
+        .catch(() => undefined),
+    ]);
+    // se falhou, segue com o que tinha; as telas tentam de novo quando voltam a aparecer
   }, []);
 
   // A validade (7 dias) e a espera (3 dias) passam com o app em segundo plano, e o horário agendado também chega:
@@ -100,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setDoador(null);
       setFormulario(undefined);
       setProximoAgendamento(undefined);
+      setGamificacao(undefined);
       setIrParaFormulario(false);
       setAviso({ tipo: "erro", texto: "Sua sessão expirou. Faça login novamente." });
     });
@@ -178,6 +201,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAviso(null);
     setFormulario(undefined);
     setProximoAgendamento(undefined);
+    setGamificacao(undefined);
     setIrParaFormulario(false);
     setDoador(null);
   }, []);
@@ -200,6 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAviso({ tipo: "sucesso", texto: "Sua conta e todos os dados associados foram removidos com sucesso." });
     setFormulario(undefined);
     setProximoAgendamento(undefined);
+    setGamificacao(undefined);
     setIrParaFormulario(false);
     setDoador(null);
   }, []);
@@ -256,6 +281,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return mensagem;
   }, []);
 
+  const listarAgendamentos = useCallback(async () => {
+    const token = tokenRef.current;
+    if (!token) throw new ApiError(401, "Sessão inválida ou expirada. Faça login novamente.");
+    return (await apiAgenda.listar(token)).agendamentos;
+  }, []);
+
+  const simularDoacao = useCallback(async (id: string) => {
+    const token = tokenRef.current;
+    if (!token) throw new ApiError(401, "Sessão inválida ou expirada. Faça login novamente.");
+    const resposta = await apiAgenda.simularDoacao(token, id);
+    // A doação confirmada deixa de ser "a que ainda vai acontecer" e os pontos e a patente mudam.
+    setProximoAgendamento(null);
+    setGamificacao(resposta.gamificacao);
+    return resposta;
+  }, []);
+
   const listarInstituicoes = useCallback(async (filtro: FiltroInstituicoes) => {
     const token = tokenRef.current;
     if (!token) throw new ApiError(401, "Sessão inválida ou expirada. Faça login novamente.");
@@ -281,7 +322,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       enviarFormulario,
       verificarAgendamento,
       proximoAgendamento,
+      gamificacao,
       carregarAgendamento,
+      listarAgendamentos,
+      simularDoacao,
       buscarAgenda,
       agendar,
       cancelarAgendamento,
@@ -305,7 +349,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       enviarFormulario,
       verificarAgendamento,
       proximoAgendamento,
+      gamificacao,
       carregarAgendamento,
+      listarAgendamentos,
+      simularDoacao,
       buscarAgenda,
       agendar,
       cancelarAgendamento,

@@ -42,6 +42,8 @@ describe("RNF-002: o token de A não abre os dados de B", () => {
     { nome: "ver o próximo agendamento", metodo: "get", caminho: (id) => `/doadores/${id}/agendamentos/proximo` },
     { nome: "agendar uma doação", metodo: "post", caminho: (id) => `/doadores/${id}/agendamentos`, corpo: { qualquer: "coisa" } },
     { nome: "cancelar um agendamento", metodo: "delete", caminho: (id) => `/doadores/${id}/agendamentos/${randomUUID()}` },
+    { nome: "confirmar uma doação", metodo: "post", caminho: (id) => `/doadores/${id}/agendamentos/${randomUUID()}/simular-doacao` },
+    { nome: "ver pontos e patente", metodo: "get", caminho: (id) => `/doadores/${id}/gamificacao` },
   ];
 
   it.each(rotas)("A tenta $nome de B: 403, e nada de B muda", async ({ metodo, caminho, corpo }) => {
@@ -96,6 +98,8 @@ describe("RNF-002: o token de A não abre os dados de B", () => {
     expect((await request(app).get(`/doadores/${b.doador.id}/agendamentos`)).status).toBe(401);
     expect((await request(app).post(`/doadores/${b.doador.id}/agendamentos`).send({})).status).toBe(401);
     expect((await request(app).delete(`/doadores/${b.doador.id}/agendamentos/${randomUUID()}`)).status).toBe(401);
+    expect((await request(app).post(`/doadores/${b.doador.id}/agendamentos/${randomUUID()}/simular-doacao`)).status).toBe(401);
+    expect((await request(app).get(`/doadores/${b.doador.id}/gamificacao`)).status).toBe(401);
   });
 });
 

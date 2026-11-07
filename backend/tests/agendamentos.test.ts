@@ -221,6 +221,9 @@ describe("HU-04, cenário 1: agendamento realizado com sucesso", () => {
       medico: { codigo: escolhido.medicoCodigo, nome: escolhido.medicoNome, especialidade: escolhido.especialidade },
       tipoSanguineo: "O+",
       canceladoEm: null,
+      finalizadoEm: null,
+      pontosGanhos: null,
+      simulado: true,
     });
     expect(a.protocolo).toMatch(/^SIM-[0-9A-F]{8}$/);
     expect(new Date(a.fim).getTime() - new Date(a.inicio).getTime()).toBe(30 * 60_000);

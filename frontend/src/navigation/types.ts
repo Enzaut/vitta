@@ -1,6 +1,7 @@
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { CompositeScreenProps, NavigatorScreenParams } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { Agendamento } from "../api/agenda";
 import type { Instituicao } from "../api/instituicoes";
 
 // As abas de baixo (só para quem já entrou).
@@ -28,6 +29,9 @@ export type RootStackParamList = {
   ResultadoFormulario: undefined;
   // HU-05: detalhes de uma instituição (o app já tem os dados da lista, então passa a instituição inteira)
   Instituicao: { instituicao: Instituicao };
+  // HU-06: histórico de agendamentos e os detalhes de uma doação confirmada (o app já tem o agendamento da lista)
+  HistoricoDeAgendamentos: undefined;
+  DetalhesDaDoacao: { agendamento: Agendamento };
   // Carrossel de boas-vindas visto de novo (a primeira vez ele aparece antes de tudo, fora da navegação)
   Apresentacao: undefined;
 };

@@ -27,4 +27,9 @@ export const AgendamentoController = {
   async cancelar(req: Request, res: Response) {
     res.json(await AgendamentoService.cancelar(req.doadorId!, String(req.params.agendamentoId)));
   },
+
+  // Só na demonstração: faz o papel da instituição confirmando que a doação aconteceu.
+  async simularDoacao(req: Request, res: Response) {
+    res.json(await AgendamentoService.simularDoacao(req.doadorId!, String(req.params.agendamentoId)));
+  },
 };

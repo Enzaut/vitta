@@ -1,4 +1,5 @@
 import { requisicao } from "./client";
+import type { ResumoDeGamificacao } from "./gamificacao";
 
 // HU-04: a agenda das instituições (médicos e horários livres e ocupados) e os agendamentos de doação.
 // Por enquanto os médicos e os horários são inventados pela API (simulado: true), enquanto não há integração com as instituições.
@@ -55,6 +56,11 @@ export type Agendamento = {
   protocolo: string;
   criadoEm: string;
   canceladoEm: string | null;
+  // Só em doação confirmada (Finalizado): quando a instituição confirmou e quantos pontos deu.
+  finalizadoEm: string | null;
+  pontosGanhos: number | null;
+  // true = a instituição é simulada: o botão de demonstração "Simular doação" pode aparecer.
+  simulado: boolean;
 };
 
 export type PedidoDeAgendamento = {
@@ -65,6 +71,9 @@ export type PedidoDeAgendamento = {
 };
 
 export type RespostaDoAgendamento = { agendamento: Agendamento; mensagem: string };
+
+// O que volta ao confirmar uma doação: o agendamento Finalizado, a mensagem e os pontos e a patente de agora.
+export type RespostaDaDoacao = RespostaDoAgendamento & { gamificacao: ResumoDeGamificacao; subiuDePatente: boolean };
 
 export const apiAgenda = {
   agenda: (token: string, instituicaoId: string) => requisicao<Agenda>(`/instituicoes/${encodeURIComponent(instituicaoId)}/agenda`, { token }),
@@ -78,4 +87,11 @@ export const apiAgenda = {
 
   cancelar: (token: string, id: string) =>
     requisicao<RespostaDoAgendamento>(`/doadores/me/agendamentos/${encodeURIComponent(id)}`, { metodo: "DELETE", token }),
+
+  // HU-06: todos os agendamentos do doador, do mais recente para o mais antigo.
+  listar: (token: string) => requisicao<{ agendamentos: Agendamento[] }>("/doadores/me/agendamentos", { token }),
+
+  // Só na demonstração: faz o papel da instituição confirmando que a doação aconteceu (RN-007).
+  simularDoacao: (token: string, id: string) =>
+    requisicao<RespostaDaDoacao>(`/doadores/me/agendamentos/${encodeURIComponent(id)}/simular-doacao`, { metodo: "POST", token }),
 };

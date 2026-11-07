@@ -30,9 +30,10 @@ const violouChaveUnica = (erro: unknown) => typeof erro === "object" && erro !==
 // Camada de acesso ao banco: só conversa com o Prisma, sem regra de negócio.
 export const AgendamentoRepository = {
   // Os horários que o VITTA já reservou numa instituição no período: ficam ocupados para os outros doadores.
+  // Um horário já usado numa doação confirmada (Finalizado) continua ocupado; só o cancelamento libera.
   horariosReservados(instituicaoId: string, de: Date, ate: Date) {
     return prisma.agendamento.findMany({
-      where: { instituicaoId, status: StatusAgendamento.AGENDADO, inicio: { gte: de, lt: ate } },
+      where: { instituicaoId, status: { in: [StatusAgendamento.AGENDADO, StatusAgendamento.FINALIZADO] }, inicio: { gte: de, lt: ate } },
       select: { medicoCodigo: true, inicio: true },
     });
   },
@@ -84,6 +85,27 @@ export const AgendamentoRepository = {
       if (violouChaveUnica(erro)) return { tipo: "horario-ocupado" };
       throw erro;
     }
+  },
+
+  // Quantas doações a instituição já confirmou e quantos pontos elas deram (RN-007).
+  async totaisDeDoacoes(doadorId: string): Promise<{ doacoes: number; pontos: number }> {
+    const { _count, _sum } = await prisma.agendamento.aggregate({
+      where: { doadorId, status: StatusAgendamento.FINALIZADO },
+      _count: { _all: true },
+      _sum: { pontosGanhos: true },
+    });
+    return { doacoes: _count._all, pontos: _sum.pontosGanhos ?? 0 };
+  },
+
+  // A instituição confirmou a doação: o agendamento vira FINALIZADO e guarda os pontos que deu.
+  // Só vale se ainda estiver AGENDADO (dois pedidos ao mesmo tempo não dão pontos em dobro). Devolve nulo se não valeu.
+  async finalizar(id: string, finalizadoEm: Date, pontos: number) {
+    const { count } = await prisma.agendamento.updateMany({
+      where: { id, status: StatusAgendamento.AGENDADO },
+      data: { status: StatusAgendamento.FINALIZADO, finalizadoEm, pontosGanhos: pontos },
+    });
+    if (count === 0) return null;
+    return prisma.agendamento.findUnique({ where: { id }, include: comInstituicao });
   },
 
   // Só cancela se ainda estiver AGENDADO. Devolve nulo se outro pedido já tinha cancelado.
