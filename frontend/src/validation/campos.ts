@@ -86,3 +86,50 @@ export function formatarDataBr(iso: string): string {
 export function primeiroNome(nome: string): string {
   return nome.trim().split(/\s+/)[0] ?? nome;
 }
+
+// Lado da instituição -------------------------------------------------------------------------------------------
+
+export const MSG_CNPJ = "Informe um CNPJ válido.";
+
+// Vai formatando o CNPJ enquanto a pessoa digita: 11222333000181 -> 11.222.333/0001-81.
+export function mascararCnpj(texto: string): string {
+  const d = texto.replace(/\D/g, "").slice(0, 14);
+  if (d.length <= 2) return d;
+  if (d.length <= 5) return `${d.slice(0, 2)}.${d.slice(2)}`;
+  if (d.length <= 8) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`;
+  if (d.length <= 12) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8)}`;
+  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+}
+
+// Mesma regra da API: 14 dígitos, sem sequência repetida e com os dois dígitos verificadores certos.
+export function cnpjValido(texto: string): boolean {
+  const d = texto.replace(/\D/g, "");
+  if (d.length !== 14 || /^(\d)+$/.test(d)) return false;
+  const digito = (base: string, pesos: number[]) => {
+    const resto = [...base].reduce((total, c, i) => total + Number(c) * pesos[i]!, 0) % 11;
+    return resto < 2 ? 0 : 11 - resto;
+  };
+  const p1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  return digito(d.slice(0, 12), p1) === Number(d[12]) && digito(d.slice(0, 13), [6, ...p1]) === Number(d[13]);
+}
+
+// "31/12/2026" -> "2026-12-31". Devolve null se a data não existir ou já tiver passado (a campanha vale até hoje, no máximo).
+export function dataFinalParaIso(texto: string): string | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(texto);
+  if (!m) return null;
+  const [dia, mes, ano] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const data = new Date(Date.UTC(ano, mes - 1, dia));
+  if (data.getUTCFullYear() !== ano || data.getUTCMonth() !== mes - 1 || data.getUTCDate() !== dia) return null;
+  const hoje = new Date();
+  const inicioDeHoje = Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  return data.getTime() < inicioDeHoje ? null : `${m[3]}-${m[2]}-${m[1]}`;
+}
+
+// Hoje mais "n" dias, no formato DD/MM/AAAA (para sugerir a data final de uma campanha).
+export function dataEmDias(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}

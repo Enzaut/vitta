@@ -36,7 +36,7 @@ export type ListaDeInstituicoes = {
   total: number;
 };
 
-function paraResposta(instituicao: Instituicao, distancia: number | null): InstituicaoResposta {
+export function paraResposta(instituicao: Instituicao, distancia: number | null): InstituicaoResposta {
   return {
     id: instituicao.id,
     nome: instituicao.nome,

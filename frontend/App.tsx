@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "./src/auth/AuthContext";
+import { InstituicaoProvider } from "./src/instituicao/InstituicaoContext";
 import { AppNavigator } from "./src/navigation/AppNavigator";
 import { cores } from "./src/theme";
 
@@ -28,8 +29,10 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <AppNavigator />
-        <StatusBar style="dark" />
+        <InstituicaoProvider>
+          <AppNavigator />
+          <StatusBar style="dark" />
+        </InstituicaoProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

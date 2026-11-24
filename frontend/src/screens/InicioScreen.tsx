@@ -102,6 +102,14 @@ export function InicioScreen({ navigation }: Props) {
         )}
       </View>
 
+      {/* Campanhas relâmpago das instituições (o doador vê as que precisam do tipo dele primeiro). */}
+      <View style={estilos.cartao}>
+        <Ionicons name="megaphone-outline" size={28} color={cores.primaria} />
+        <Text style={estilos.cartaoTitulo}>Campanhas de doação</Text>
+        <Text style={estilos.cartaoTexto}>Veja as instituições que estão chamando doadores agora, principalmente do seu tipo sanguíneo.</Text>
+        <Botao titulo="Ver campanhas" variante="secundario" aoPressionar={() => navigation.navigate("Campanhas")} />
+      </View>
+
       {/* RN-007 e RN-008: pontos e patente de quem doa (a doação conta quando a instituição confirma). */}
       <View style={estilos.cartao}>
         <Ionicons name="trophy-outline" size={28} color={cores.primaria} />

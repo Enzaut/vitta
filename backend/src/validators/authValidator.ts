@@ -3,13 +3,13 @@ import { AppError } from "../errors/AppError";
 import { ESPECIAIS, senhaAtendeRegra } from "../utils/senha";
 
 // Mensagens iguais às da HU-01 (Documento de Requisitos).
-const OBRIGATORIO = "Este campo é obrigatório.";
+export const OBRIGATORIO = "Este campo é obrigatório.";
 const EMAIL_INVALIDO = "Informe um endereço de e-mail válido.";
-const REGRA_SENHA = `A senha deve ter no mínimo 8 caracteres, com uma letra maiúscula, um número e um caractere especial (${ESPECIAIS}).`;
+export const REGRA_SENHA = `A senha deve ter no mínimo 8 caracteres, com uma letra maiúscula, um número e um caractere especial (${ESPECIAIS}).`;
 
-const textoObrigatorio = z.string({ error: OBRIGATORIO }).trim().min(1, OBRIGATORIO);
+export const textoObrigatorio = z.string({ error: OBRIGATORIO }).trim().min(1, OBRIGATORIO);
 
-const email = textoObrigatorio.pipe(z.email({ error: EMAIL_INVALIDO })).transform((e) => e.toLowerCase());
+export const email = textoObrigatorio.pipe(z.email({ error: EMAIL_INVALIDO })).transform((e) => e.toLowerCase());
 
 // A data chega como "AAAA-MM-DD". Precisa existir no calendário e não pode ser futura.
 function lerData(texto: string): Date | null {

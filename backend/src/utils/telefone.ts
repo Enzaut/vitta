@@ -20,3 +20,11 @@ export function lerTelefone(texto: string): string | null {
   if (digitos.length === 11) return terceiro === "9" ? digitos : null;
   return /[2-5]/.test(terceiro) ? digitos : null;
 }
+
+// Faz o caminho inverso de lerTelefone: "6133274413" -> "(61) 3327-4413" e "61999998888" -> "(61) 99999-8888".
+// É o formato que as instituições dos dados iniciais usam e que o app mostra aos doadores.
+export function formatarTelefone(digitos: string): string {
+  if (digitos.length === 11) return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7)}`;
+  if (digitos.length === 10) return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 6)}-${digitos.slice(6)}`;
+  return digitos;
+}

@@ -20,9 +20,14 @@ export class ApiError extends Error {
 const MSG_SEM_CONEXAO = "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.";
 
 // Chamado quando a API recusa um token que tínhamos (sessão vencida ou conta excluída).
+// Doador e instituição têm sessões separadas, então cada uma avisa a própria.
 let aoSessaoExpirar: (() => void) | null = null;
+let aoSessaoDaInstituicaoExpirar: (() => void) | null = null;
 export function configurarSessaoExpirada(funcao: (() => void) | null) {
   aoSessaoExpirar = funcao;
+}
+export function configurarSessaoDaInstituicaoExpirada(funcao: (() => void) | null) {
+  aoSessaoDaInstituicaoExpirar = funcao;
 }
 
 type Opcoes = {
@@ -30,11 +35,13 @@ type Opcoes = {
   corpo?: unknown;
   token?: string | null;
   timeoutMs?: number;
+  // De quem é o token. Se a API recusá-lo (401), avisa a sessão certa.
+  papel?: "doador" | "instituicao";
 };
 
 export async function requisicao<T>(
   caminho: string,
-  { metodo = "GET", corpo, token, timeoutMs = 25_000 }: Opcoes = {},
+  { metodo = "GET", corpo, token, timeoutMs = 25_000, papel = "doador" }: Opcoes = {},
 ): Promise<T> {
   if (!API_CONFIGURADA) {
     throw new ApiError(0, "Endereço da API não configurado. Defina EXPO_PUBLIC_API_URL no arquivo frontend/.env.");
@@ -66,7 +73,7 @@ export async function requisicao<T>(
 
   const dados = (await resposta.json().catch(() => ({}))) as { mensagem?: string; campos?: Record<string, string> };
   if (!resposta.ok) {
-    if (resposta.status === 401 && token) aoSessaoExpirar?.();
+    if (resposta.status === 401 && token) (papel === "instituicao" ? aoSessaoDaInstituicaoExpirar : aoSessaoExpirar)?.();
     throw new ApiError(
       resposta.status,
       typeof dados.mensagem === "string" ? dados.mensagem : "Erro inesperado. Tente novamente.",

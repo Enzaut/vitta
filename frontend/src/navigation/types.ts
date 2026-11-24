@@ -2,6 +2,7 @@ import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { CompositeScreenProps, NavigatorScreenParams } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { Agendamento } from "../api/agenda";
+import type { Campanha } from "../api/instituicao";
 import type { Instituicao } from "../api/instituicoes";
 
 // As abas de baixo (só para quem já entrou).
@@ -13,12 +14,28 @@ export type AbasParamList = {
   Perfil: undefined;
 };
 
+// As abas de baixo de quem representa uma instituição.
+export type AbasInstituicaoParamList = {
+  Painel: undefined;
+  CampanhasDaInstituicao: undefined;
+  ContaDaInstituicao: undefined;
+};
+
 // Telas do app e os parâmetros de cada uma.
 export type RootStackParamList = {
   // Quem ainda não entrou
   BoasVindas: undefined;
   Cadastro: undefined;
   Login: undefined;
+  // Quem representa uma instituição ainda não entrou
+  CadastroInstituicao: undefined;
+  LoginInstituicao: undefined;
+  // Instituição que já entrou: abas, pedido de inclusão no mapa, campanhas, estoque e dados
+  AbasInstituicao: NavigatorScreenParams<AbasInstituicaoParamList> | undefined;
+  SolicitacaoInclusao: undefined;
+  CampanhaForm: { campanha?: Campanha } | undefined;
+  Estoque: undefined;
+  DadosInstituicao: undefined;
   // Quem já entrou
   Abas: NavigatorScreenParams<AbasParamList> | undefined;
   Dados: undefined;
@@ -32,6 +49,8 @@ export type RootStackParamList = {
   // HU-06: histórico de agendamentos e os detalhes de uma doação confirmada (o app já tem o agendamento da lista)
   HistoricoDeAgendamentos: undefined;
   DetalhesDaDoacao: { agendamento: Agendamento };
+  // Campanhas relâmpago das instituições, vistas pelo doador
+  Campanhas: undefined;
   // Carrossel de boas-vindas visto de novo (a primeira vez ele aparece antes de tudo, fora da navegação)
   Apresentacao: undefined;
 };
@@ -39,5 +58,11 @@ export type RootStackParamList = {
 // Tela que fica numa aba: pode ir para as outras abas e para as telas da pilha.
 export type AbaProps<Aba extends keyof AbasParamList> = CompositeScreenProps<
   BottomTabScreenProps<AbasParamList, Aba>,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+// Tela que fica numa aba da instituição.
+export type AbaInstituicaoProps<Aba extends keyof AbasInstituicaoParamList> = CompositeScreenProps<
+  BottomTabScreenProps<AbasInstituicaoParamList, Aba>,
   NativeStackScreenProps<RootStackParamList>
 >;

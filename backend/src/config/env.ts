@@ -17,6 +17,10 @@ export const env = {
   jwtSecret,
   // Quanto tempo o token vale (ex.: "7d", "12h").
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
+  // Lado da instituição: enquanto não existir um administrador do VITTA, o pedido de inclusão no mapa é decidido por uma
+  // simulação (a própria conta aprova ou recusa o pedido, só para demonstrar). Use APROVACAO_SIMULADA=false quando
+  // houver um administrador de verdade: aí a simulação é desligada.
+  aprovacaoSimulada: (process.env.APROVACAO_SIMULADA ?? "true") !== "false",
   // Custo do bcrypt. Maior = mais seguro e mais lento. Nos testes usamos um valor baixo.
   bcryptCost: Number(process.env.BCRYPT_COST ?? 12),
   // Endereços de sites que podem chamar a API pelo navegador (a versão web do app), separados por vírgula. "*" libera todos.

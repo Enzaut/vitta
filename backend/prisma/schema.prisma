@@ -85,6 +85,11 @@ model Instituicao {
   // HU-04: os agendamentos feitos nesta instituição (somem junto com ela, para o seed das instituições de demonstração nunca travar).
   agendamentos Agendamento[]
 
+  // Lado da instituição: a conta que cadastrou esta instituição pelo app (vazio nas instituições dos dados iniciais)
+  // e as campanhas relâmpago que ela criou.
+  conta     ContaInstituicao?
+  campanhas Campanha[]
+
   @@map("instituicoes")
 }
 
@@ -180,4 +185,90 @@ model Agendamento {
 
   @@index([doadorId, inicio])
   @@map("agendamentos")
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Lado da instituição (Iteração 5, ainda sem HU escrita). Quem representa a instituição cria uma conta, pede a
+// inclusão no mapa e, depois de aprovada, mantém o estoque e cria campanhas que o doador vê no app.
+// ---------------------------------------------------------------------------------------------------------------
+
+// Conta de quem representa uma instituição. É separada da conta do doador: o token leva o papel "instituicao".
+model ContaInstituicao {
+  id        String  @id @default(uuid())
+  nome      String
+  email     String  @unique
+  // Só os 14 dígitos.
+  cnpj      String  @unique
+  telefone  String?
+  senhaHash String
+
+  // Mesmo bloqueio do doador: 5 falhas seguidas bloqueiam a conta por 15 minutos.
+  tentativasFalhas Int       @default(0)
+  bloqueadoAte     DateTime?
+
+  // A instituição que aparece no mapa. Fica vazia até o pedido de inclusão ser aprovado.
+  instituicaoId String?      @unique
+  instituicao   Instituicao? @relation(fields: [instituicaoId], references: [id], onDelete: SetNull)
+
+  solicitacao SolicitacaoInclusao?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  @@map("contas_instituicao")
+}
+
+enum SituacaoDaSolicitacao {
+  PENDENTE
+  APROVADA
+  RECUSADA
+}
+
+// Pedido de inclusão da instituição no mapa. Cada conta tem no máximo um; se for recusado, dá para pedir de novo.
+// Por enquanto quem decide é uma simulação (não existe administrador do VITTA): ver ContaInstituicaoService.
+model SolicitacaoInclusao {
+  id      String           @id @default(uuid())
+  contaId String           @unique
+  conta   ContaInstituicao @relation(fields: [contaId], references: [id], onDelete: Cascade)
+
+  nome      String
+  endereco  String
+  cidade    String
+  uf        String
+  telefone  String?
+  horario   String
+  latitude  Float
+  longitude Float
+
+  situacao     SituacaoDaSolicitacao @default(PENDENTE)
+  motivoRecusa String?
+
+  criadoEm   DateTime  @default(now())
+  decididaEm DateTime?
+
+  @@map("solicitacoes_inclusao")
+}
+
+// Campanha relâmpago: a instituição pede doadores (de certos tipos sanguíneos, ou de todos) até uma data.
+// Aparece para o doador numa lista dentro do app (decisão de entrega do Plano: lista, sem notificação push).
+model Campanha {
+  id String @id @default(uuid())
+
+  instituicaoId String
+  instituicao   Instituicao @relation(fields: [instituicaoId], references: [id], onDelete: Cascade)
+
+  titulo    String
+  descricao String
+  // Lista vazia = precisa de todos os tipos.
+  tiposSanguineos TipoSanguineo[]
+  // Último dia em que a campanha vale (dia de Brasília).
+  validaAte       DateTime        @db.Date
+  // Preenchido quando a instituição encerra a campanha antes da data.
+  encerradaEm     DateTime?
+
+  criadaEm     DateTime @default(now())
+  atualizadaEm DateTime @updatedAt
+
+  @@index([instituicaoId])
+  @@map("campanhas")
 }

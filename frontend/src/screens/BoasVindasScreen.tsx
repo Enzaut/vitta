@@ -43,6 +43,27 @@ export function BoasVindasScreen({ navigation }: Props) {
         <Botao titulo="Já tenho uma conta — Entrar" variante="secundario" aoPressionar={() => navigation.navigate("Login")} />
       </View>
 
+      {/* Lado da instituição: quem representa um hemocentro ou posto de coleta entra por aqui. */}
+      <View style={estilos.instituicao}>
+        <Text style={estilos.instituicaoTexto}>Você representa uma instituição de coleta?</Text>
+        <Pressable
+          onPress={() => navigation.navigate("CadastroInstituicao")}
+          accessibilityRole="button"
+          accessibilityLabel="Cadastrar instituição"
+          hitSlop={8}
+        >
+          <Text style={estilos.link}>Cadastrar instituição</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => navigation.navigate("LoginInstituicao")}
+          accessibilityRole="button"
+          accessibilityLabel="Entrar como instituição"
+          hitSlop={8}
+        >
+          <Text style={estilos.link}>Entrar como instituição</Text>
+        </Pressable>
+      </View>
+
       <Pressable
         onPress={verificar}
         style={estilos.servidor}
@@ -72,6 +93,9 @@ const estilos = StyleSheet.create({
   nome: { fontFamily: fontes.titulo, fontSize: tamanhos.titulo, color: cores.primariaEscura, letterSpacing: 2 },
   slogan: { fontFamily: fontes.texto, fontSize: tamanhos.texto, color: cores.textoSecundario, marginTop: 4 },
   botoes: { gap: 12 },
+  instituicao: { alignItems: "center", gap: 10, marginTop: 28 },
+  instituicaoTexto: { fontFamily: fontes.texto, fontSize: tamanhos.textoSecundario, color: cores.textoSecundario },
+  link: { fontFamily: fontes.textoMedio, fontSize: tamanhos.texto, color: cores.primaria, textDecorationLine: "underline" },
   servidor: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 28, padding: 8 },
   ponto: { width: 10, height: 10, borderRadius: 5 },
   servidorTexto: { fontFamily: fontes.texto, fontSize: tamanhos.textoSecundario },

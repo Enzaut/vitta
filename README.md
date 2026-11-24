@@ -31,6 +31,8 @@ Duas observações:
 | Perfil (HU-11) | Telefone e tipo sanguíneo |
 | Controle de acesso (RNF-002) | Cada doador só enxerga e altera os próprios dados |
 | Localização (RNF-008) | Pede permissão, avisa quando o GPS está desligado e mantém a busca por nome |
+| Lado da instituição (Iteração 5) | Na tela inicial, "Cadastrar instituição" e "Entrar como instituição". A instituição cria a conta (nome, CNPJ, e-mail, senha), pede a inclusão no mapa (endereço, horário e localização), atualiza telefone, horário e o estoque (tipos em falta, que aparecem nos cards do mapa) e cria campanhas relâmpago. Tem menu próprio: Painel, Campanhas e Conta |
+| Campanhas relâmpago | O doador vê, em "Campanhas de doação" na tela inicial, as campanhas ativas das instituições, com as que precisam do tipo sanguíneo dele primeiro. A campanha tem título, descrição, tipos procurados (ou todos) e data final (até 180 dias); a instituição pode editar, encerrar antes da data ou excluir. Decisão do Plano: a campanha chega ao doador numa lista dentro do app, sem notificação push |
 
 Ainda não existem: histórico de doações (HU-07), carteira e vouchers (HU-08 e HU-09), central de informações (HU-10) e notificações.
 
@@ -39,6 +41,10 @@ As instituições do mapa são 1 real (Hemocentro de Brasília) e 7 de demonstra
 **Médicos e horários inventados.** Pelo documento de requisitos (RN-005), quem guarda a agenda é a instituição e o VITTA só envia o pedido. Como ainda não há integração com nenhuma instituição, a pasta `backend/src/agenda` faz o papel dela: inventa os médicos (`medicosSimulados.ts`), os dias e turnos de atendimento e os horários, e deixa mais ou menos metade deles ocupada (o resultado é sempre o mesmo para o mesmo horário). Os horários vão de hoje até 13 dias à frente, a cada 30 minutos, e só aparecem os que começam daqui a pelo menos 2 horas. Para ligar uma instituição de verdade, basta trocar esse módulo por uma chamada à API dela.
 
 **Confirmar a doação (demonstração).** Quem confirma que a doação aconteceu é a instituição, e só aí a pessoa ganha os pontos. Como a instituição é de mentira, o cartão do agendamento tem o botão "Simular doação (demonstração)", que faz esse papel: o agendamento vira Finalizado, a pessoa ganha 100 pontos e pode subir de patente. Com uma instituição de verdade esse botão some, e a confirmação passa a vir dela.
+
+**Aprovar a inclusão no mapa (demonstração).** O pedido de inclusão da instituição precisa ser decidido por alguém do VITTA, mas ainda não existe administrador. Por isso, enquanto o pedido está em análise, o painel da instituição mostra os botões "Simular aprovação" e "Simular recusa" (só na demonstração). Aprovado, a instituição entra no mapa dos doadores como instituição de verdade (não marcada como demonstração). Quando houver administrador, basta definir `APROVACAO_SIMULADA=false` na API: os botões somem e a rota de simulação passa a responder 403.
+
+**Papéis.** O token JWT leva o papel (`doador` ou `instituicao`). Cada papel só entra nas próprias rotas: o doador usa `/doadores`, `/instituicoes` e `/campanhas`; a instituição usa `/instituicao/me/...`, onde o dono dos dados vem sempre do token, nunca do caminho. Token de um papel na rota do outro recebe 403. Tokens antigos, sem papel, continuam valendo como de doador.
 
 ## Banco de dados
 
@@ -49,6 +55,9 @@ O banco é PostgreSQL e está publicado na Render. A imagem mostra as tabelas vi
 - `doadores`: as contas. A senha nunca é guardada, só o hash (bcrypt).
 - `formularios_elegibilidade`: o último formulário respondido por cada doador.
 - `instituicoes`: as instituições do mapa.
+- `contas_instituicao`: as contas de quem representa uma instituição (a senha só como hash). Fica ligada à instituição do mapa depois que o pedido é aprovado.
+- `solicitacoes_inclusao`: o pedido de inclusão no mapa de cada conta (Pendente, Aprovada ou Recusada).
+- `campanhas`: as campanhas relâmpago de cada instituição (título, descrição, tipos procurados, data final e, se encerrada antes, quando).
 - `agendamentos`: as doações agendadas (instituição, médico, horário, tipo sanguíneo, status Agendado, Finalizado ou Cancelado e, nas doações confirmadas, os pontos ganhos). Os médicos e os horários livres e ocupados não ficam no banco: vêm da agenda inventada. O saldo de pontos e a patente são calculados a partir das doações Finalizadas.
 - `_prisma_migrations`: o histórico das alterações do banco. As tabelas `pg_stat_*` são da própria Render.
 
@@ -57,7 +66,7 @@ O banco é PostgreSQL e está publicado na Render. A imagem mostra as tabelas vi
 - **Aplicativo** (`frontend/`): Expo SDK 58, React Native 0.88, TypeScript, React Navigation.
 - **API** (`backend/`): Node 22, Express 5, TypeScript, Prisma 7, PostgreSQL 16, Zod, JWT.
 - **Infraestrutura**: Docker e Docker Compose; publicação na Render.
-- **Testes**: Vitest e Supertest (536 testes automáticos).
+- **Testes**: Vitest e Supertest (607 testes automáticos).
 
 ```
 vitta/
@@ -87,7 +96,7 @@ Para rodar API e banco juntos em containers: `docker compose up --build` (a API 
 
 ## Testes
 
-Em `backend/`, rode `npm test`. São 536 testes, com banco de dados de verdade, cobrindo cadastro, login, controle de acesso, formulário de elegibilidade (inclusive a espera de 3 dias, a validade de 7 dias e a conferência antes de agendar), mapa, CORS, o agendamento (agenda de horários, reserva, horário ocupado, pedidos ao mesmo tempo, instituição fora do ar e cancelamento) e a confirmação da doação (pontos e patentes).
+Em `backend/`, rode `npm test`. São 607 testes, com banco de dados de verdade, cobrindo cadastro, login, o lado da instituição (conta, pedido de inclusão, estoque e campanhas, com a separação entre os papéis), controle de acesso, formulário de elegibilidade (inclusive a espera de 3 dias, a validade de 7 dias e a conferência antes de agendar), mapa, CORS, o agendamento (agenda de horários, reserva, horário ocupado, pedidos ao mesmo tempo, instituição fora do ar e cancelamento) e a confirmação da doação (pontos e patentes).
 
 ## Publicação na internet
 

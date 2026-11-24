@@ -3,6 +3,8 @@ declare global {
   namespace Express {
     interface Request {
       doadorId?: string;
+      // Preenchido pelo middleware autenticarInstituicao (token com papel "instituicao").
+      contaInstituicaoId?: string;
     }
   }
 }

@@ -13,7 +13,8 @@ import { ApiError, configurarSessaoExpirada } from "../api/client";
 import { apiFormulario, type Formulario, type Modelo, type Respostas, type VerificacaoDeAgendamento } from "../api/formulario";
 import { apiGamificacao, type ResumoDeGamificacao } from "../api/gamificacao";
 import { apiInstituicoes, type FiltroInstituicoes, type ListaDeInstituicoes } from "../api/instituicoes";
-import { apagarToken, lerToken, salvarToken } from "../storage/tokenStorage";
+import { apiCampanhas, type CampanhaDoDoador } from "../api/instituicao";
+import { CHAVE_INSTITUICAO, apagarToken, lerToken, salvarToken } from "../storage/tokenStorage";
 import { primeiroNome } from "../validation/campos";
 
 // Mensagem de destaque que acompanha a pessoa entre telas (ex.: "conta excluída com sucesso").
@@ -57,6 +58,8 @@ type Contexto = {
   cancelarAgendamento(id: string): Promise<string>;
   // HU-05: instituições de coleta (com a localização, só as que estão dentro do raio).
   listarInstituicoes(filtro: FiltroInstituicoes): Promise<ListaDeInstituicoes>;
+  // Campanhas relâmpago das instituições (as que precisam do tipo do doador vêm primeiro).
+  listarCampanhas(posicao?: { latitude: number; longitude: number }): Promise<CampanhaDoDoador[]>;
 };
 
 const AuthContext = createContext<Contexto | null>(null);
@@ -159,6 +162,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const iniciarSessao = useCallback(
     async (token: string, atual: Doador, contaNova = false) => {
       await salvarToken(token);
+      // Doador e instituição nunca ficam logados ao mesmo tempo neste aparelho.
+      await apagarToken(CHAVE_INSTITUICAO);
       tokenRef.current = token;
       setDoador(atual);
       if (contaNova) {
@@ -303,6 +308,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return apiInstituicoes.listar(token, filtro);
   }, []);
 
+  const listarCampanhas = useCallback(async (posicao?: { latitude: number; longitude: number }) => {
+    const token = tokenRef.current;
+    if (!token) throw new ApiError(401, "Sessão inválida ou expirada. Faça login novamente.");
+    return (await apiCampanhas.listar(token, posicao)).campanhas;
+  }, []);
+
   const valor = useMemo(
     () => ({
       carregando,
@@ -330,6 +341,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       agendar,
       cancelarAgendamento,
       listarInstituicoes,
+      listarCampanhas,
     }),
     [
       carregando,
@@ -357,6 +369,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       agendar,
       cancelarAgendamento,
       listarInstituicoes,
+      listarCampanhas,
     ],
   );
 
